@@ -11,6 +11,7 @@ import { normalizeIp } from '../lib/sanitize';
 import { validBody, validParams, validQuery } from '../middleware/validate';
 import {
   createUser,
+  getUser,
   listUsers,
   resetPassword,
   updateUser,
@@ -27,6 +28,11 @@ export function createAdminUserController(deps: { pool: Pool }) {
     list: async (req: Request, res: Response): Promise<void> => {
       const query = validQuery<AdminUserListQuery>(req);
       res.status(200).json(await listUsers(pool, query));
+    },
+
+    get: async (req: Request, res: Response): Promise<void> => {
+      const { id } = validParams<IdParams>(req);
+      res.status(200).json({ user: await getUser(pool, id) });
     },
 
     create: async (req: Request, res: Response): Promise<void> => {

@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import type { LeaveApplicationDto } from '@leave/shared';
+import { LIMITS, type LeaveApplicationDto } from '@leave/shared';
 import { PageHeader, Screen } from '@/components/Screen';
 import { AppText } from '@/components/Text';
 import { Button } from '@/components/Button';
 import { Card, KeyValue, Notice, SectionTitle, Skeleton, StatusPill } from '@/components/Surface';
 import { ApiError, apiFetch } from '@/lib/api';
+import { TextField } from '@/components/TextField';
 import { openDocument } from '@/lib/document';
 import { daysLabel, formatDate, formatDateRange, formatDateTime, formatFileSize } from '@/lib/format';
 import { sessionErrorMessage, useSession } from '@/lib/session';
@@ -16,6 +17,7 @@ import { colors, fonts, radius, space } from '@/theme/tokens';
 export default function RequestDetailScreen() {
   const router = useRouter();
   const { user } = useSession();
+  const isAdmin = user?.role === 'admin';
   const params = useLocalSearchParams<{ id: string }>();
   const id = Number(params.id);
 
@@ -32,7 +34,7 @@ export default function RequestDetailScreen() {
     }
 
     let cancelled = false;
-    apiFetch<{ application: LeaveApplicationDto }>(`/leaves/${id}`)
+    apiFetch<{ application: LeaveApplicationDto }>(isAdmin ? `/admin/leaves/${id}` : `/leaves/${id}`)
       .then((result) => {
         if (!cancelled) setApplication(result.application);
       })
@@ -48,7 +50,7 @@ export default function RequestDetailScreen() {
     return () => {
       cancelled = true;
     };
-  }, [id, attempt]);
+  }, [id, attempt, isAdmin]);
 
   const isOwner = user && application ? application.userId === user.id : false;
 
@@ -141,8 +143,8 @@ export default function RequestDetailScreen() {
                 <View style={styles.pendingNote}>
                   <Ionicons name="hourglass-outline" size={20} color={colors.warning} />
                   <AppText variant="small" tone="muted">
-                    {user?.role === 'admin'
-                      ? 'Waiting for your decision. Use the review queue to approve or reject it.'
+                    {isAdmin
+                      ? 'Waiting for your decision. Approve or reject it below.'
                       : 'Waiting for your administrator. You will see the decision here.'}
                   </AppText>
                 </View>
@@ -169,10 +171,105 @@ export default function RequestDetailScreen() {
             </Card>
           </View>
 
+          {isAdmin && application.status === 'pending' ? (
+            <DecisionPanel
+              application={application}
+              onDecided={(decided) => setApplication(decided)}
+            />
+          ) : null}
+
           <DocumentCard application={application} />
         </>
       ) : null}
     </Screen>
+  );
+}
+
+
+function DecisionPanel({
+  application,
+  onDecided,
+}: {
+  application: LeaveApplicationDto;
+  onDecided: (decided: LeaveApplicationDto) => void;
+}) {
+  const [remarks, setRemarks] = useState('');
+  const [remarksError, setRemarksError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState<'approved' | 'rejected' | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const decide = async (decision: 'approved' | 'rejected') => {
+    if (submitting) return;
+    const trimmed = remarks.trim();
+    if (decision === 'rejected' && trimmed.length === 0) {
+      setRemarksError('Explain why the application is rejected.');
+      return;
+    }
+    setSubmitting(decision);
+    setError(null);
+    setRemarksError(null);
+    try {
+      const result = await apiFetch<{ application: LeaveApplicationDto }>(
+        `/admin/leaves/${application.id}/decision`,
+        {
+          method: 'POST',
+          body: { decision, ...(trimmed.length > 0 ? { remarks: trimmed } : {}) },
+        }
+      );
+      onDecided(result.application);
+    } catch (decideError) {
+      if (decideError instanceof ApiError && decideError.fields?.remarks) {
+        setRemarksError(decideError.fields.remarks);
+      } else {
+        // e.g. 409 already decided, or 400 insufficient balance on approval.
+        setError(sessionErrorMessage(decideError));
+      }
+    } finally {
+      setSubmitting(null);
+    }
+  };
+
+  return (
+    <Card style={styles.decisionCard}>
+      <SectionTitle
+        title="Make a decision"
+        detail="The applicant is notified through this screen; there is no email."
+      />
+      {error ? <Notice tone="error">{error}</Notice> : null}
+      <TextField
+        label="Remarks for the applicant (required when rejecting)"
+        value={remarks}
+        onChangeText={(value) => {
+          setRemarks(value);
+          setRemarksError(null);
+        }}
+        placeholder="e.g. Approved — have a good break."
+        error={remarksError}
+        multiline
+        numberOfLines={3}
+        maxLength={LIMITS.remarks}
+        editable={!submitting}
+      />
+      <View style={styles.decisionRow}>
+        <Button
+          label="Reject"
+          variant="danger"
+          icon="close"
+          onPress={() => void decide('rejected')}
+          loading={submitting === 'rejected'}
+          disabled={submitting === 'approved'}
+          accessibilityHint="Rejects this application and requires remarks"
+        />
+        <Button
+          label="Approve"
+          icon="checkmark"
+          onPress={() => void decide('approved')}
+          loading={submitting === 'approved'}
+          disabled={submitting === 'rejected'}
+          accessibilityHint="Approves this application and deducts the balance"
+        />
+      </View>
+    </Card>
   );
 }
 
@@ -278,6 +375,14 @@ const styles = StyleSheet.create({
   errorCard: {
     gap: space.md,
     alignItems: 'flex-start',
+  },
+  decisionCard: {
+    gap: space.md,
+  },
+  decisionRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: space.md,
   },
   errorActions: {
     flexDirection: 'row',

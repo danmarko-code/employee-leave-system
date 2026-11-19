@@ -16,7 +16,7 @@ only to the Express API; MySQL is reachable only from the server.
 | 3 | Backend leave features and reports | Delivered; 73 tests green on MySQL 8.0.46 |
 | 4 | Client auth, navigation, responsive shell | Delivered; web + native bundles build, Playwright pass |
 | 5 | Employee screens | Delivered; apply/list/detail verified end-to-end on web |
-| 6 | Admin screens | Not started |
+| 6 | Admin screens | Delivered; decision queue, accounts, leave types, reports, activity |
 | 7 | Security checklist, review report, tests | Not started |
 
 ## Layout
@@ -50,6 +50,21 @@ employee-leave-system/
 Folders that belong to later steps are described here but not created yet, so
 the tree never contains empty placeholders.
 
+## Step 6: admin screens
+
+Everything an administrator needs is now live: the decision queue at
+`/approvals` (status/search/type filters, 10 per page), account management
+(`/admin/users`, create + edit + reset password + leave history), leave-type
+management (`/admin/leave-types`, create + edit + deactivate-instead-of-delete),
+reports (`/admin/reports`: live tiles, leave summary for a year, applications
+report with CSV download), and the read-only activity log (`/admin/activity`).
+Roles are re-checked server-side on every `/admin/*` request; a client-side
+`RequireRole` guard only hides the screens from employees. Full walkthrough and
+security notes in [docs/step-6-verification.md](docs/step-6-verification.md).
+
+> Demo note: the demo database now contains the decided applications from the
+> step-6 run: Maria's Sick leave (approved) and Vacation leave (rejected).
+
 ## Step 5: employee screens
 
 The employee flows are live on the same shell: My Requests (filter, paginate),
@@ -58,8 +73,9 @@ checks), the read-only request detail with a decision timeline, and document
 viewing via authenticated download. Full walkthrough and security notes in
 [docs/step-5-verification.md](docs/step-5-verification.md).
 
-> Demo note: `maria.santos@example.com` has one real pending application
-> (Sick, 30 Nov – 2 Dec 2026) created during the step-5 browser run.
+> Demo note: `maria.santos@example.com` has two decided applications from the
+> step-5/6 browser runs: Sick leave for 30 Nov – 2 Dec 2026 (approved) and
+> Vacation leave for 14–16 Dec 2026 (rejected).
 
 ## Step 4: client
 

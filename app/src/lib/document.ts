@@ -95,7 +95,7 @@ export async function buildApplicationForm(input: {
   return form;
 }
 
-function bytesToBase64(bytes: Uint8Array): string {
+export function bytesToBase64(bytes: Uint8Array): string {
   const table = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
   let output = '';
   for (let index = 0; index < bytes.length; index += 3) {

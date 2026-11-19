@@ -310,10 +310,34 @@ describe('administrator features', () => {
     expect(await countAudit(h, 'report_generated', adminUser.id)).toBeGreaterThanOrEqual(1);
   });
 
+  it('gets a single account by id for the edit screen, and 404s unknown ids', async () => {
+    const { token } = await admin();
+    const user = await h.createUser({ name: 'Single Record' });
+
+    const res = await request(h.app)
+      .get(`/api/admin/users/${user.id}`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.user).toMatchObject({ id: user.id, name: 'Single Record', isActive: true });
+    expect(JSON.stringify(res.body)).not.toMatch(/password_hash|$argon2/);
+
+    const missing = await request(h.app)
+      .get('/api/admin/users/999999999')
+      .set('Authorization', `Bearer ${token}`);
+    expect(missing.status).toBe(404);
+
+    const asEmployee = await employee();
+    const denied = await request(h.app)
+      .get(`/api/admin/users/${user.id}`)
+      .set('Authorization', `Bearer ${asEmployee.token}`);
+    expect(denied.status).toBe(403);
+  });
+
   it('denies every admin endpoint to an employee', async () => {
     const { token } = await employee();
     const paths = [
       '/api/admin/users',
+      '/api/admin/users/1',
       '/api/admin/leave-types',
       '/api/admin/leaves',
       '/api/admin/dashboard',

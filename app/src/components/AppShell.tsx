@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
-import { Platform, Pressable, StyleSheet, useWindowDimensions, View, type ViewStyle } from 'react-native';
+import { type ReactNode, useState } from 'react';
+import { Modal, Platform, Pressable, StyleSheet, useWindowDimensions, View, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { usePathname, useRouter } from 'expo-router';
@@ -8,7 +8,7 @@ import { Avatar } from './Surface';
 import { BrandMark } from './Brand';
 import { brand, colors, fonts, layout, radius, space } from '@/theme/tokens';
 import { formatDateTime, roleLabel } from '@/lib/format';
-import { navItemsFor, type NavItem } from '@/lib/navigation';
+import { BOTTOM_ITEMS, navItemsFor, overflowItemsFor, type NavItem } from '@/lib/navigation';
 import { useSession } from '@/lib/session';
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -162,19 +162,30 @@ function BottomBar({ bottomInset }: { bottomInset: number }) {
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useSession();
+  const [moreOpen, setMoreOpen] = useState(false);
   if (!user) return null;
 
+  const items = BOTTOM_ITEMS[user.role];
+  const overflow = overflowItemsFor(user.role);
+  const overflowActive = overflow.some((item) => pathname === item.href);
+
   return (
-    <View style={[styles.bottomBar, { paddingBottom: Math.max(bottomInset, space.sm) }]}>
-      {navItemsFor(user.role).map((item) => {
-        const active = pathname === item.href;
-        return (
-          <Pressable
+    <View>
+      <View style={[styles.bottomBar, { paddingBottom: Math.max(bottomInset, space.sm) }]}>
+        {items.map((item) => (
+          <BottomBarButton
             key={item.href}
+            item={item}
+            active={pathname === item.href}
             onPress={() => router.push(item.href)}
-            accessibilityRole="link"
-            accessibilityLabel={item.label}
-            accessibilityState={{ selected: active }}
+          />
+        ))}
+        {overflow.length > 0 ? (
+          <Pressable
+            onPress={() => setMoreOpen(true)}
+            accessibilityRole="button"
+            accessibilityLabel="More sections"
+            accessibilityState={{ expanded: moreOpen, selected: overflowActive }}
             style={({ pressed }) => [
               styles.bottomItem,
               pressed && { opacity: 0.7 },
@@ -182,24 +193,155 @@ function BottomBar({ bottomInset }: { bottomInset: number }) {
             ]}
           >
             <Ionicons
-              name={active ? item.activeIcon : item.icon}
+              name={overflowActive ? 'ellipsis-horizontal' : 'ellipsis-horizontal-outline'}
               size={22}
-              color={active ? colors.brand : colors.faint}
+              color={overflowActive ? colors.brand : colors.faint}
             />
             <AppText
               variant="micro"
-              style={{ color: active ? colors.brandInk : colors.muted, fontFamily: active ? fonts.medium : fonts.regular }}
+              style={{
+                color: overflowActive ? colors.brandInk : colors.muted,
+                fontFamily: overflowActive ? fonts.medium : fonts.regular,
+              }}
             >
-              {item.label}
+              More
             </AppText>
           </Pressable>
-        );
-      })}
+        ) : null}
+      </View>
+
+      <Modal
+        visible={moreOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setMoreOpen(false)}
+      >
+        <Pressable
+          style={styles.moreBackdrop}
+          accessibilityRole="button"
+          accessibilityLabel="Close menu"
+          onPress={() => setMoreOpen(false)}
+        >
+          <Pressable
+            style={[styles.moreSheet, { paddingBottom: Math.max(bottomInset, space.lg) }]}
+            accessibilityViewIsModal
+          >
+            <AppText variant="label" tone="muted" style={styles.moreTitle}>
+              More sections
+            </AppText>
+            {overflow.map((item) => {
+              const active = pathname === item.href;
+              return (
+                <Pressable
+                  key={item.href}
+                  onPress={() => {
+                    setMoreOpen(false);
+                    router.push(item.href);
+                  }}
+                  accessibilityRole="link"
+                  accessibilityLabel={item.label}
+                  accessibilityState={{ selected: active }}
+                  style={({ pressed }) => [
+                    styles.moreItem,
+                    active && styles.moreItemActive,
+                    pressed && { backgroundColor: colors.surfaceMuted },
+                    Platform.OS === 'web'
+                      ? ({ cursor: 'pointer', outlineStyle: 'none' } as unknown as ViewStyle)
+                      : null,
+                  ]}
+                >
+                  <Ionicons
+                    name={active ? item.activeIcon : item.icon}
+                    size={20}
+                    color={active ? colors.brand : colors.muted}
+                  />
+                  <AppText
+                    variant="body"
+                    style={{
+                      color: active ? colors.brandInk : colors.ink,
+                      fontFamily: active ? fonts.medium : fonts.regular,
+                    }}
+                  >
+                    {item.label}
+                  </AppText>
+                </Pressable>
+              );
+            })}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
 
+function BottomBarButton({
+  item,
+  active,
+  onPress,
+}: {
+  item: NavItem;
+  active: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="link"
+      accessibilityLabel={item.label}
+      accessibilityState={{ selected: active }}
+      style={({ pressed }) => [
+        styles.bottomItem,
+        pressed && { opacity: 0.7 },
+        Platform.OS === 'web' ? ({ cursor: 'pointer', outlineStyle: 'none' } as unknown as ViewStyle) : null,
+      ]}
+    >
+      <Ionicons
+        name={active ? item.activeIcon : item.icon}
+        size={22}
+        color={active ? colors.brand : colors.faint}
+      />
+      <AppText
+        variant="micro"
+        style={{
+          color: active ? colors.brandInk : colors.muted,
+          fontFamily: active ? fonts.medium : fonts.regular,
+        }}
+      >
+        {item.label}
+      </AppText>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
+  moreBackdrop: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(8, 18, 27, 0.42)',
+  },
+  moreSheet: {
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: radius.card,
+    borderTopRightRadius: radius.card,
+    paddingHorizontal: space.md,
+    paddingTop: space.lg,
+    gap: space.xs,
+  },
+  moreTitle: {
+    paddingHorizontal: space.md,
+    paddingBottom: space.sm,
+  },
+  moreItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    minHeight: 46,
+    paddingHorizontal: space.md,
+    borderRadius: radius.control,
+  },
+  moreItemActive: {
+    backgroundColor: colors.brandSoft,
+  },
   wideRoot: {
     flex: 1,
     flexDirection: 'row',
@@ -306,10 +448,12 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
   },
   bottomItem: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 2,
-    minWidth: 88,
+    minWidth: 0,
     minHeight: 48,
+    paddingHorizontal: space.xxs,
   },
 });

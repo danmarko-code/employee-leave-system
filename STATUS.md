@@ -1,8 +1,9 @@
 # Project status
 
 Expo client + Express/TypeScript API + MySQL. The UI is live: sign-in,
-Home, My Requests, Apply, request detail and Profile — employee side done
-(step 5); admin screens land in step 6.
+Home, My Requests, Apply, request detail, Profile (employee side, step 5)
+and the admin screens (decision queue, accounts, leave types, reports,
+activity log) — steps 5 and 6 done.
 
 ## Steps
 
@@ -13,10 +14,10 @@ Home, My Requests, Apply, request detail and Profile — employee side done
 | 3 | Leave applications, documents, admin tools, reports | Done, 73 tests |
 | 4 | Expo client auth, navigation, responsive shell | Delivered; web + native bundles build, Playwright pass |
 | 5 | Employee screens | Delivered; Playwright run green |
-| 6 | Admin screens | Pending |
+| 6 | Admin screens | Delivered; Playwright run green |
 | 7 | Security checklist, review, full test pass | Pending |
 
-Total: **73 tests / 7 suites** green. `npm audit` = 0 vulnerabilities.
+Total: **74 tests / 7 suites** green. `npm audit` = 0 vulnerabilities.
 
 ## What exists
 
@@ -27,7 +28,7 @@ Total: **73 tests / 7 suites** green. `npm audit` = 0 vulnerabilities.
 - `server/` — 20 routes under `/api`: login/refresh/logout, me, leave types,
   balances, applications, document upload/download, admin decisions, admin
   users, admin leave types, dashboard, reports (JSON/CSV), activity log.
-- `docs/` — verification reports for steps 1-5 with security checklists
+- `docs/` — verification reports for steps 1-6 with security checklists
   and residual risks.
 
 ## Run

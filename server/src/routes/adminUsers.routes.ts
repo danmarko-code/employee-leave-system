@@ -35,6 +35,13 @@ export function registerAdminUserRoutes(
   });
 
   addRoute(router, registry, deps, {
+    method: 'get',
+    path: '/admin/users/:id',
+    access: 'admin',
+    handlers: [validate({ params: idParamSchema }), controller.get],
+  });
+
+  addRoute(router, registry, deps, {
     method: 'patch',
     path: '/admin/users/:id',
     access: 'admin',

@@ -20,9 +20,30 @@ export const NAV_ITEMS: Record<Role, NavItem[]> = {
   ],
   admin: [
     { href: '/home', label: 'Overview', icon: 'grid-outline', activeIcon: 'grid' },
+    { href: '/approvals', label: 'Applications', icon: 'file-tray-full-outline', activeIcon: 'file-tray-full' },
+    { href: '/admin/users', label: 'Employees', icon: 'people-outline', activeIcon: 'people' },
+    { href: '/admin/leave-types', label: 'Leave types', icon: 'layers-outline', activeIcon: 'layers' },
+    { href: '/admin/reports', label: 'Reports', icon: 'bar-chart-outline', activeIcon: 'bar-chart' },
+    { href: '/admin/activity', label: 'Activity', icon: 'pulse-outline', activeIcon: 'pulse' },
     { href: '/profile', label: 'Profile', icon: 'person-outline', activeIcon: 'person' },
   ],
 };
+
+/**
+ * Narrow-screen bottom bar shows at most four destinations plus a "More" tab
+ * for admins; the sidebar lists NAV_ITEMS in full. Employees fit entirely.
+ */
+export const BOTTOM_ITEMS: Record<Role, NavItem[]> = {
+  employee: NAV_ITEMS.employee,
+  admin: NAV_ITEMS.admin.filter((item) =>
+    ['/home', '/approvals', '/admin/users', '/profile'].includes(item.href)
+  ),
+};
+
+export function overflowItemsFor(role: Role): NavItem[] {
+  const bottom = new Set(BOTTOM_ITEMS[role].map((item) => item.href));
+  return NAV_ITEMS[role].filter((item) => !bottom.has(item.href));
+}
 
 export function navItemsFor(role: Role): NavItem[] {
   return NAV_ITEMS[role];

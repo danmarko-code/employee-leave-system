@@ -154,6 +154,7 @@ function EmployeeHome() {
 
 function AdminHome() {
   const { user } = useSession();
+  const router = useRouter();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [pending, setPending] = useState<LeaveApplicationDto[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -218,7 +219,12 @@ function AdminHome() {
             </View>
           ) : pending && pending.length > 0 ? (
             pending.map((application, index) => (
-              <AdminRequestRow key={application.id} application={application} first={index === 0} />
+              <AdminRequestRow
+                key={application.id}
+                application={application}
+                first={index === 0}
+                onOpen={() => router.push(`/requests/${application.id}`)}
+              />
             ))
           ) : pending ? (
             <EmptyState
@@ -228,6 +234,16 @@ function AdminHome() {
             />
           ) : null}
         </Card>
+        {pending && pending.length > 0 ? (
+          <View style={styles.viewAll}>
+            <Button
+              label="View all applications"
+              variant="ghost"
+              size="sm"
+              onPress={() => router.push('/approvals')}
+            />
+          </View>
+        ) : null}
       </View>
     </Screen>
   );
@@ -296,9 +312,26 @@ function RequestRow({
   );
 }
 
-function AdminRequestRow({ application, first }: { application: LeaveApplicationDto; first: boolean }) {
+function AdminRequestRow({
+  application,
+  first,
+  onOpen,
+}: {
+  application: LeaveApplicationDto;
+  first: boolean;
+  onOpen: () => void;
+}) {
   return (
-    <View style={[styles.row, !first && styles.rowDivided]}>
+    <Pressable
+      onPress={onOpen}
+      accessibilityRole="button"
+      accessibilityLabel={`${application.employeeName}, ${application.leaveTypeName}, ${formatDateRange(
+        application.startDate,
+        application.endDate
+      )}, pending`}
+      accessibilityHint="Opens the application to review it"
+      style={({ pressed }) => [styles.row, !first && styles.rowDivided, pressed && styles.rowPressed]}
+    >
       <View style={styles.rowText}>
         <AppText variant="body" style={{ fontFamily: fonts.medium }} numberOfLines={1}>
           {application.employeeName}
@@ -311,7 +344,8 @@ function AdminRequestRow({ application, first }: { application: LeaveApplication
       <AppText variant="micro" tone="faint" tabular>
         {application.department}
       </AppText>
-    </View>
+      <Ionicons name="chevron-forward" size={18} color={colors.faint} />
+    </Pressable>
   );
 }
 
