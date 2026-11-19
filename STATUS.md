@@ -33,6 +33,11 @@ Total: **74 tests / 7 suites** green. `npm audit` = 0 vulnerabilities.
 
 ## Run
 
+See [docs/setup.md](docs/setup.md) for a full other-device runbook
+(install, env, `db:apply`, seed, phone via Expo Go, troubleshooting).
+
+
+
 ```bash
 cp server/.env.example server/.env    # fill DB + JWT + CORS values
 cp app/.env.example app/.env          # EXPO_PUBLIC_API_URL

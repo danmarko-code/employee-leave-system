@@ -7,6 +7,9 @@ leave types, prints reports and reads the activity log.
 One Expo codebase targets Android, iOS and desktop browsers. The client talks
 only to the Express API; MySQL is reachable only from the server.
 
+**Setting this up on another machine?** See [docs/setup.md](docs/setup.md) — `npm install` +
+`npm run db:apply`, no migration framework.
+
 ## Status
 
 | Step | Scope | State |
