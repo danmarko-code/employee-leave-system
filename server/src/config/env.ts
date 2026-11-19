@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import path from 'node:path';
 
 export type NodeEnv = 'development' | 'test' | 'production';
 export type LogLevel = 'silent' | 'error' | 'warn' | 'info';
@@ -37,7 +38,8 @@ export interface AppConfig {
     refreshMax: number;
     windowMs: number;
   };
-  uploadDir?: string;
+  /** Absolute directory for supporting documents; never served statically. */
+  uploadDir: string;
 }
 
 const ENV_SCHEMA = z.object({
@@ -94,6 +96,15 @@ function assertSecret(name: string, value: string): void {
   if (/^(change|example|secret|password|replace)/i.test(value)) {
     configError([`${name} still looks like a placeholder.`]);
   }
+}
+
+function resolveUploadDir(raw: string | undefined): string {
+  const value = raw?.trim();
+  if (!value) return path.resolve(process.cwd(), 'var', 'uploads');
+  if (!path.isAbsolute(value)) {
+    configError(['UPLOAD_DIR must be an absolute path, outside any web root.']);
+  }
+  return path.resolve(value);
 }
 
 function parseOrigins(raw: string, isProduction: boolean): string[] {
@@ -196,6 +207,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       refreshMax: toInt('REFRESH_RATE_LIMIT_MAX', raw.REFRESH_RATE_LIMIT_MAX, 60, 3, 1000),
       windowMs: 15 * 60 * 1000,
     },
-    uploadDir: raw.UPLOAD_DIR || undefined,
+    uploadDir: resolveUploadDir(raw.UPLOAD_DIR),
   });
 }

@@ -5,6 +5,11 @@ import type { RouteMeta } from './registry';
 import { registerAuthRoutes } from './auth.routes';
 import { registerMeRoutes } from './me.routes';
 import { registerAdminRoutes } from './admin.routes';
+import { registerLeaveRoutes } from './leaves.routes';
+import { registerAdminLeaveRoutes } from './adminLeaves.routes';
+import { registerAdminUserRoutes } from './adminUsers.routes';
+import { registerAdminLeaveTypeRoutes } from './adminLeaveTypes.routes';
+import { registerReportRoutes } from './reports.routes';
 
 export function createApiRouter(deps: { config: AppConfig; pool: Pool }): {
   router: Router;
@@ -15,7 +20,12 @@ export function createApiRouter(deps: { config: AppConfig; pool: Pool }): {
 
   registerAuthRoutes(router, registry, deps);
   registerMeRoutes(router, registry, deps);
+  registerLeaveRoutes(router, registry, deps);
   registerAdminRoutes(router, registry, deps);
+  registerAdminLeaveRoutes(router, registry, deps);
+  registerAdminUserRoutes(router, registry, deps);
+  registerAdminLeaveTypeRoutes(router, registry, deps);
+  registerReportRoutes(router, registry, deps);
 
   return { router, registry };
 }

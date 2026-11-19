@@ -47,3 +47,7 @@ export function validBody<T>(req: Express.Request): T {
 export function validQuery<T>(req: Express.Request): T {
   return req.valid?.query as T;
 }
+
+export function validParams<T>(req: Express.Request): T {
+  return req.valid?.params as T;
+}

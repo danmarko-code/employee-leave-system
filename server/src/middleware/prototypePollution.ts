@@ -32,3 +32,20 @@ export function rejectPrototypePollution(): RequestHandler {
     next();
   };
 }
+
+/**
+ * Run after a multipart parser. Besides the key scan, it refuses a body whose
+ * prototype is not Object.prototype (a `__proto__` field can replace it while
+ * leaving no own key to scan).
+ */
+export function rejectPollutedBody(): RequestHandler {
+  return (req, _res, next) => {
+    const body: unknown = req.body;
+    const proto = body && typeof body === 'object' ? Object.getPrototypeOf(body) : Object.prototype;
+    if ((proto !== Object.prototype && proto !== null) || scan(body, 0)) {
+      next(badRequest('Check the request and try again.'));
+      return;
+    }
+    next();
+  };
+}

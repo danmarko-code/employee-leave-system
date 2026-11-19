@@ -1,4 +1,5 @@
 import express, { type Express } from 'express';
+import { mkdirSync } from 'node:fs';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -15,6 +16,10 @@ import { assertRoutesDeclared } from './routes/registry';
 
 export function createApp(config: AppConfig, pool: Pool): Express {
   setLogLevel(config.logLevel);
+
+  // Supporting documents live outside any web root and are only ever streamed
+  // through an authenticated route.
+  mkdirSync(config.uploadDir, { recursive: true });
 
   const app = express();
   app.disable('x-powered-by');

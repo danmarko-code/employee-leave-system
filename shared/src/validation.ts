@@ -36,3 +36,6 @@ export const isoDateSchema = z
 export const isoDateTimeSchema = z
   .string()
   .datetime({ offset: true, message: 'Use an ISO 8601 timestamp with a timezone.' });
+
+/** Route parameter `:id`. */
+export const idParamSchema = z.strictObject({ id: idSchema });

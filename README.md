@@ -13,7 +13,7 @@ only to the Express API; MySQL is reachable only from the server.
 | --- | --- | --- |
 | 1 | Schema, seed, least-privilege DB users | Delivered; SQL, grants and constraints verified on MySQL 8.0.46 |
 | 2 | Backend auth, sessions, RBAC | Delivered; 45 tests green on MySQL 8.0.46 |
-| 3 | Backend leave features and reports | Not started |
+| 3 | Backend leave features and reports | Delivered; 73 tests green on MySQL 8.0.46 |
 | 4 | Client auth, navigation, responsive shell | Not started |
 | 5 | Employee screens | Not started |
 | 6 | Admin screens | Not started |
@@ -63,6 +63,19 @@ npm run test:server           # 45 integration tests; needs a disposable DB in s
 
 Endpoints, session rules, the full security checklist and the open risks are
 in [docs/step-2-verification.md](docs/step-2-verification.md).
+
+### Step 3: leave features, accounts and reports
+
+Same commands as step 2 (`npm run test:server`, `npm run check:sql`). New
+routes cover leave types, balances, applications with one supporting document,
+admin decisions, account management, dashboard and two printable reports
+(JSON or CSV). Uploads go to `UPLOAD_DIR` (`server/var/uploads` by default),
+outside any web root.
+
+The endpoint table, business rules, document handling, the security checklist
+and the open risks (no malware scanner, no holiday calendar, no carry-over,
+unencrypted files at rest) are in
+[docs/step-3-verification.md](docs/step-3-verification.md).
 
 ### Security decisions in step 2
 
