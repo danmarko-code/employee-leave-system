@@ -167,6 +167,30 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
   return read<T>(response);
 }
 
+/**
+ * Like `apiFetch` but returns the raw `Response` for binary downloads.
+ * Handles 401 refresh transparently.
+ */
+export async function apiFetchRaw(path: string, options: RequestOptions = {}): Promise<Response> {
+  const response = await send(path, options);
+
+  if (response.status === 401 && !options.retried && !path.startsWith('/auth/')) {
+    const refreshed = await refreshSession();
+    if (!refreshed) {
+      authLostHandler?.();
+      throw await toError(response);
+    }
+    return apiFetchRaw(path, { ...options, retried: true });
+  }
+
+  if (response.status === 401 && !path.startsWith('/auth/')) {
+    authLostHandler?.();
+  }
+
+  if (!response.ok) throw await toError(response);
+  return response;
+}
+
 /** Auth calls talk to the same client but keep their own error handling. */
 export const authApi = {
   login(email: string, password: string): Promise<AuthResponse> {

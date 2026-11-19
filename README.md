@@ -15,10 +15,7 @@ only to the Express API; MySQL is reachable only from the server.
 | 2 | Backend auth, sessions, RBAC | Delivered; 45 tests green on MySQL 8.0.46 |
 | 3 | Backend leave features and reports | Delivered; 73 tests green on MySQL 8.0.46 |
 | 4 | Client auth, navigation, responsive shell | Delivered; web + native bundles build, Playwright pass |
-| 5 | Employee screens | Not started |
-| 6 | Admin screens | Not started |
-| 7 | Security checklist, review report, tests | Not started |
-| 5 | Employee screens | Not started |
+| 5 | Employee screens | Delivered; apply/list/detail verified end-to-end on web |
 | 6 | Admin screens | Not started |
 | 7 | Security checklist, review report, tests | Not started |
 
@@ -52,6 +49,17 @@ employee-leave-system/
 
 Folders that belong to later steps are described here but not created yet, so
 the tree never contains empty placeholders.
+
+## Step 5: employee screens
+
+The employee flows are live on the same shell: My Requests (filter, paginate),
+the apply form (Mon–Fri working-day counter, document attach with type/size
+checks), the read-only request detail with a decision timeline, and document
+viewing via authenticated download. Full walkthrough and security notes in
+[docs/step-5-verification.md](docs/step-5-verification.md).
+
+> Demo note: `maria.santos@example.com` has one real pending application
+> (Sick, 30 Nov – 2 Dec 2026) created during the step-5 browser run.
 
 ## Step 4: client
 

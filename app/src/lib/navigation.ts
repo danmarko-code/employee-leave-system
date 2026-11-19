@@ -15,6 +15,7 @@ export interface NavItem {
 export const NAV_ITEMS: Record<Role, NavItem[]> = {
   employee: [
     { href: '/home', label: 'Home', icon: 'home-outline', activeIcon: 'home' },
+    { href: '/requests', label: 'My Requests', icon: 'document-text-outline', activeIcon: 'document-text' },
     { href: '/profile', label: 'Profile', icon: 'person-outline', activeIcon: 'person' },
   ],
   admin: [

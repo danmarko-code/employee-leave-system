@@ -1,10 +1,8 @@
 # Project status
 
-**Is there a UI yet? No.** Only `shared/` and `server/` exist. The Expo client
-(`app/`) starts in step 4.
-
-Built for the Information Assurance and Security project: Expo client +
-Express/TypeScript API + MySQL.
+Expo client + Express/TypeScript API + MySQL. The UI is live: sign-in,
+Home, My Requests, Apply, request detail and Profile — employee side done
+(step 5); admin screens land in step 6.
 
 ## Steps
 
@@ -12,9 +10,9 @@ Express/TypeScript API + MySQL.
 | --- | --- | --- |
 | 1 | MySQL schema, seed, least-privilege DB users | Done, verified |
 | 2 | API auth, sessions, RBAC, audit log | Done, 45 tests |
-| 3 | Leave applications, documents, admin tools, reports | Done, 28 tests |
+| 3 | Leave applications, documents, admin tools, reports | Done, 73 tests |
 | 4 | Expo client auth, navigation, responsive shell | Delivered; web + native bundles build, Playwright pass |
-| 5 | Employee screens | Pending |
+| 5 | Employee screens | Delivered; Playwright run green |
 | 6 | Admin screens | Pending |
 | 7 | Security checklist, review, full test pass | Pending |
 
@@ -29,8 +27,8 @@ Total: **73 tests / 7 suites** green. `npm audit` = 0 vulnerabilities.
 - `server/` — 20 routes under `/api`: login/refresh/logout, me, leave types,
   balances, applications, document upload/download, admin decisions, admin
   users, admin leave types, dashboard, reports (JSON/CSV), activity log.
-- `docs/` — `step-1`, `step-2`, `step-3` verification reports with security
-  checklists and residual risks.
+- `docs/` — verification reports for steps 1-5 with security checklists
+  and residual risks.
 
 ## Run
 

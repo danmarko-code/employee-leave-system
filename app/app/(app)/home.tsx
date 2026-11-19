@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import type {
   DashboardStats,
@@ -32,6 +33,7 @@ export default function HomeScreen() {
 
 function EmployeeHome() {
   const { user } = useSession();
+  const router = useRouter();
   const [balances, setBalances] = useState<LeaveBalanceDto[] | null>(null);
   const [recent, setRecent] = useState<LeaveApplicationDto[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +70,9 @@ function EmployeeHome() {
       <PageHeader
         title={`${greeting()}, ${firstName(user.name)}`}
         subtitle={`${longToday()}${user.department ? ` · ${user.department}` : ''}`}
+        action={
+          <Button label="Apply for leave" size="sm" icon="add" onPress={() => router.push('/requests/new')} />
+        }
       />
 
       {error ? (
@@ -121,16 +126,27 @@ function EmployeeHome() {
             </View>
           ) : recent && recent.length > 0 ? (
             recent.map((application, index) => (
-              <RequestRow key={application.id} application={application} first={index === 0} />
+              <RequestRow
+                key={application.id}
+                application={application}
+                first={index === 0}
+                onOpen={() => router.push(`/requests/${application.id}`)}
+              />
             ))
           ) : recent ? (
             <EmptyState
               icon="document-text-outline"
               title="No requests yet"
               body="Applications you submit will appear here with their current status."
+              action={{ label: 'Apply for leave', onPress: () => router.push('/requests/new') }}
             />
           ) : null}
         </Card>
+        {recent && recent.length > 0 ? (
+          <View style={styles.viewAll}>
+            <Button label="View all requests" variant="ghost" size="sm" onPress={() => router.push('/requests')} />
+          </View>
+        ) : null}
       </View>
     </Screen>
   );
@@ -246,9 +262,26 @@ function BalanceCard({ balance }: { balance: LeaveBalanceDto }) {
   );
 }
 
-function RequestRow({ application, first }: { application: LeaveApplicationDto; first: boolean }) {
+function RequestRow({
+  application,
+  first,
+  onOpen,
+}: {
+  application: LeaveApplicationDto;
+  first: boolean;
+  onOpen: () => void;
+}) {
   return (
-    <View style={[styles.row, !first && styles.rowDivided]}>
+    <Pressable
+      onPress={onOpen}
+      accessibilityRole="button"
+      accessibilityLabel={`${application.leaveTypeName}, ${formatDateRange(
+        application.startDate,
+        application.endDate
+      )}, ${application.status}`}
+      accessibilityHint="Opens the request details"
+      style={({ pressed }) => [styles.row, !first && styles.rowDivided, pressed && styles.rowPressed]}
+    >
       <View style={styles.rowText}>
         <AppText variant="body" style={{ fontFamily: fonts.medium }} numberOfLines={1}>
           {application.leaveTypeName}
@@ -258,7 +291,8 @@ function RequestRow({ application, first }: { application: LeaveApplicationDto; 
         </AppText>
       </View>
       <StatusPill status={application.status} />
-    </View>
+      <Ionicons name="chevron-forward" size={18} color={colors.faint} />
+    </Pressable>
   );
 }
 
@@ -335,6 +369,13 @@ const styles = StyleSheet.create({
   rowText: {
     flex: 1,
     gap: 2,
+  },
+  rowPressed: {
+    backgroundColor: colors.surfaceMuted,
+  },
+  viewAll: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
   },
   skeletonList: {
     gap: space.lg,

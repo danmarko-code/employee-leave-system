@@ -3,6 +3,7 @@ import { StyleSheet, View, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { LeaveStatus } from '@leave/shared';
 import { AppText } from './Text';
+import { Button } from './Button';
 import { colors, fonts, radius, shadow, space } from '@/theme/tokens';
 import { initials } from '@/lib/format';
 
@@ -129,10 +130,12 @@ export function EmptyState({
   icon,
   title,
   body,
+  action,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
   body: string;
+  action?: { label: string; onPress: () => void };
 }) {
   return (
     <View style={styles.empty}>
@@ -145,6 +148,11 @@ export function EmptyState({
       <AppText variant="small" tone="muted" style={styles.emptyBody}>
         {body}
       </AppText>
+      {action ? (
+        <View style={styles.emptyAction}>
+          <Button label={action.label} variant="secondary" size="sm" onPress={action.onPress} />
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -259,6 +267,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: space.xs,
+  },
+  emptyAction: {
+    marginTop: space.sm,
   },
   emptyBody: {
     textAlign: 'center',
