@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Leave system",
+    "slug": "leave-system",
+    "scheme": "leavesystem",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.example.leavesystem"
+    },
+    "android": {
+      "package": "com.example.leavesystem"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "name": "Leave system",
+      "shortName": "Leave"
+    },
+    "plugins": ["expo-router", "expo-secure-store"],
+    "experiments": {
+      "tsconfigPaths": true
+    }
+  }
+}

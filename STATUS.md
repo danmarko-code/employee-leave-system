@@ -13,7 +13,7 @@ Express/TypeScript API + MySQL.
 | 1 | MySQL schema, seed, least-privilege DB users | Done, verified |
 | 2 | API auth, sessions, RBAC, audit log | Done, 45 tests |
 | 3 | Leave applications, documents, admin tools, reports | Done, 28 tests |
-| 4 | Expo client auth, navigation, responsive shell | **Next** |
+| 4 | Expo client auth, navigation, responsive shell | Delivered; web + native bundles build, Playwright pass |
 | 5 | Employee screens | Pending |
 | 6 | Admin screens | Pending |
 | 7 | Security checklist, review, full test pass | Pending |
@@ -36,13 +36,16 @@ Total: **73 tests / 7 suites** green. `npm audit` = 0 vulnerabilities.
 
 ```bash
 cp server/.env.example server/.env    # fill DB + JWT + CORS values
+cp app/.env.example app/.env          # EXPO_PUBLIC_API_URL
 npm install
 node db/apply.mjs
 NODE_ENV=development node db/seed.mjs # prints demo passwords once
 npm run dev:server                    # http://localhost:4000
+npm run dev:app                       # expo start --web --port 8081
 
 npm run test:server                   # needs a disposable DB in server/.env
 npm run check:sql
+npm run typecheck:app
 ```
 
 Seed users: `linda.cruz@example.com` (admin), `maria.santos@example.com`,

@@ -14,7 +14,10 @@ only to the Express API; MySQL is reachable only from the server.
 | 1 | Schema, seed, least-privilege DB users | Delivered; SQL, grants and constraints verified on MySQL 8.0.46 |
 | 2 | Backend auth, sessions, RBAC | Delivered; 45 tests green on MySQL 8.0.46 |
 | 3 | Backend leave features and reports | Delivered; 73 tests green on MySQL 8.0.46 |
-| 4 | Client auth, navigation, responsive shell | Not started |
+| 4 | Client auth, navigation, responsive shell | Delivered; web + native bundles build, Playwright pass |
+| 5 | Employee screens | Not started |
+| 6 | Admin screens | Not started |
+| 7 | Security checklist, review report, tests | Not started |
 | 5 | Employee screens | Not started |
 | 6 | Admin screens | Not started |
 | 7 | Security checklist, review report, tests | Not started |
@@ -25,7 +28,10 @@ only to the Express API; MySQL is reachable only from the server.
 employee-leave-system/
 ├─ app/                     Expo client (React Native + react-native-web) - step 4+
 │  ├─ app/                  Expo Router routes
-│  └─ src/                  components, hooks, api, adapters
+│  ├─ src/                  components, hooks, api, adapters
+│  ├─ metro.config.js       workspace-aware Metro
+│  ├─ app.json              expo config
+│  └─ tsconfig.json
 ├─ server/                  Express + TypeScript API - step 2+
 │  ├─ src/
 │  │  ├─ routes/ controllers/ middleware/ db/ services/ lib/
@@ -46,6 +52,25 @@ employee-leave-system/
 
 Folders that belong to later steps are described here but not created yet, so
 the tree never contains empty placeholders.
+
+## Step 4: client
+
+```bash
+# 1. Copy app/.env.example to app/.env and point EXPO_PUBLIC_API_URL at your
+#    machine (localhost for web/iOS simulators, a LAN address for a phone).
+
+npm run dev:app          # expo start --web --port 8081
+npm run dev:server       # http://localhost:4000
+
+npm run typecheck:app
+npm run export:web       # static web build into app/dist
+npm run export:android   # Android bundle
+```
+
+The client shell, sign-in, home and profile screens are live. Steps 5-6 add
+the remaining screens on top of the same shell. The full walkthrough, security
+checklist and open risks are in
+[docs/step-4-verification.md](docs/step-4-verification.md).
 
 ## Step 2: API
 

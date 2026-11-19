@@ -9,7 +9,8 @@
   },
   "workspaces": [
     "shared",
-    "server"
+    "server",
+    "app"
   ],
   "scripts": {
     "db:apply": "node db/apply.mjs",
@@ -17,13 +18,19 @@
     "build:shared": "npm run build -w @leave/shared",
     "dev:server": "npm run dev -w @leave/server",
     "test:server": "npm run test -w @leave/server",
-    "check:sql": "npm run check:sql -w @leave/server"
+    "check:sql": "npm run check:sql -w @leave/server",
+    "dev:app": "npm run start -w @leave/app",
+    "dev:web": "npm run web -w @leave/app",
+    "typecheck:app": "npm run typecheck -w @leave/app"
   },
   "devDependencies": {
     "argon2": "0.45.2",
     "mysql2": "3.24.6"
   },
   "overrides": {
-    "jest": "29.7.0"
+    "jest": "29.7.0",
+    "@expo/fingerprint": {
+      "minimatch": "11.0.9"
+    }
   }
 }
