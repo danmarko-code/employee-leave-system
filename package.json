@@ -7,12 +7,23 @@
   "engines": {
     "node": ">=20.19.0"
   },
+  "workspaces": [
+    "shared",
+    "server"
+  ],
   "scripts": {
     "db:apply": "node db/apply.mjs",
-    "db:seed": "node db/seed.mjs"
+    "db:seed": "node db/seed.mjs",
+    "build:shared": "npm run build -w @leave/shared",
+    "dev:server": "npm run dev -w @leave/server",
+    "test:server": "npm run test -w @leave/server",
+    "check:sql": "npm run check:sql -w @leave/server"
   },
   "devDependencies": {
     "argon2": "0.45.2",
     "mysql2": "3.24.6"
+  },
+  "overrides": {
+    "jest": "29.7.0"
   }
 }
