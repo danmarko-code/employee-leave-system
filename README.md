@@ -20,7 +20,7 @@ only to the Express API; MySQL is reachable only from the server.
 | 4 | Client auth, navigation, responsive shell | Delivered; web + native bundles build, Playwright pass |
 | 5 | Employee screens | Delivered; apply/list/detail verified end-to-end on web |
 | 6 | Admin screens | Delivered; decision queue, accounts, leave types, reports, activity |
-| 7 | Security checklist, review report, tests | Not started |
+| 7 | Security checklist, review report, tests | Delivered; review, full test pass and e2e in [docs/step-7-verification.md](docs/step-7-verification.md) |
 
 ## Layout
 
@@ -52,6 +52,28 @@ employee-leave-system/
 
 Folders that belong to later steps are described here but not created yet, so
 the tree never contains empty placeholders.
+
+## Step 7: security review
+
+The closing review is done: the `security` skill checklist was walked over the
+whole codebase (SQL injection, RBAC per object, transactions, sessions, CSRF,
+headers, uploads, logging, secrets, dependencies), a full pass ran on a
+disposable MySQL 3412 (74 tests, 12/12 grant checks), and the critical
+cross-role journey was exercised in a browser against the seeded demo stack —
+employee files two requests on a phone-sized viewport, admin refuses one and
+approves the other, the employee sees the decisions and remarks, and an
+employee hitting `/approvals` is bounced to `/home`. Two Low findings (one
+real, one a wrong test expectation) are recorded and closed; no High/Medium
+issues were found. The residual risks and the explicit
+implemented/verified vs. not-verified vs. open-risk lists are in
+[docs/step-7-verification.md](docs/step-7-verification.md). This is not a
+claim of "fully secure": production hardening (deployment topology, shared
+rate-limit store, monitoring, store-submission audit) is out of scope for the
+current build.
+
+> Demo note: Maria's applications from this run are #3 (2027-02-08, rejected),
+> #4 (2027-03-15, approved). Earlier runs left #1 (Sick, approved) and #2
+> (Vacation, rejected).
 
 ## Step 6: admin screens
 

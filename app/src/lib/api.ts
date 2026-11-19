@@ -92,18 +92,32 @@ function headersFor(options: RequestOptions): Record<string, string> {
   return headers;
 }
 
+/** Bounds every request so a hung server cannot pin the UI forever. */
+const DEFAULT_TIMEOUT_MS = 30_000;
+
 async function send(path: string, options: RequestOptions): Promise<Response> {
   let response: Response;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+  const callerSignal = options.signal;
+  const onCallerAbort = () => controller.abort();
+  if (callerSignal) {
+    if (callerSignal.aborted) controller.abort();
+    else callerSignal.addEventListener('abort', onCallerAbort, { once: true });
+  }
   try {
     response = await fetch(`${API_URL}/api${path}`, {
       method: options.method ?? 'GET',
       headers: headersFor(options),
       credentials: isWeb ? 'include' : 'omit',
       body: options.form ?? (options.body !== undefined ? JSON.stringify(options.body) : undefined),
-      signal: options.signal,
+      signal: controller.signal,
     });
   } catch {
     throw new NetworkError();
+  } finally {
+    clearTimeout(timer);
+    if (callerSignal) callerSignal.removeEventListener('abort', onCallerAbort);
   }
   return response;
 }

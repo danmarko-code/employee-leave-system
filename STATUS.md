@@ -3,7 +3,8 @@
 Expo client + Express/TypeScript API + MySQL. The UI is live: sign-in,
 Home, My Requests, Apply, request detail, Profile (employee side, step 5)
 and the admin screens (decision queue, accounts, leave types, reports,
-activity log) — steps 5 and 6 done.
+activity log, steps 5 and 6). Step 7 (security review, full test pass, e2e)
+is delivered — see `docs/step-7-verification.md`.
 
 ## Steps
 
@@ -15,9 +16,11 @@ activity log) — steps 5 and 6 done.
 | 4 | Expo client auth, navigation, responsive shell | Delivered; web + native bundles build, Playwright pass |
 | 5 | Employee screens | Delivered; Playwright run green |
 | 6 | Admin screens | Delivered; Playwright run green |
-| 7 | Security checklist, review, full test pass | Pending |
+| 7 | Security checklist, review, full test pass | Delivered; 74/74 tests on throwaway 3412, e2e green |
 
 Total: **74 tests / 7 suites** green. `npm audit` = 0 vulnerabilities.
+End-to-end journey (Playwright + Edge): 10/10 API checks and the full
+cross-role UI flow — see `docs/step-7-verification.md`.
 
 ## What exists
 
@@ -74,5 +77,7 @@ the repo.
 ## Known gaps
 
 No malware scanner on uploads, no holiday calendar, no carry-over, files
-unencrypted at rest, reports capped at 5,000 rows, in-process rate limiting.
-Full list in `docs/step-3-verification.md`.
+unencrypted at rest, reports capped at 5,000 rows, in-process rate limiting,
+no forced password rotation, app-switcher privacy masking not implemented,
+placeholder app identifiers. Consolidated list with severity and status:
+`docs/step-7-verification.md` (F1 fixed in step 7; two Low items recorded).
