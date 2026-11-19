@@ -38,3 +38,6 @@ desktop.ini
 
 # Uploaded supporting documents (local default)
 server/var/
+
+# Generated knowledge graph (rebuild locally per machine)
+graphify-out/
