@@ -41,6 +41,9 @@ fails to start with `@leave/shared` resolution errors.
 
 ## 3. Configure `server/.env`
 
+Full reference for every variable (with production guidance and the exact
+fail-closed boot checks): [docs/env-config.md](env-config.md).
+
 ```bash
 cp server/.env.example server/.env
 ```
@@ -80,6 +83,9 @@ Fill in every empty value. The file is git-ignored; never commit it.
    usually 3306); `PORT` is the API port (4000).
 
 ## 4. Configure `app/.env`
+
+See [docs/env-config.md](env-config.md) for the `EXPO_PUBLIC_*` rules and why
+bundle values are public.
 
 ```bash
 cp app/.env.example app/.env
