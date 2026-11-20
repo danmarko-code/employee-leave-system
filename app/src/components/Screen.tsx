@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { AppText } from './Text';
+import { Breadcrumbs, type Crumb } from './Breadcrumbs';
 import { colors, layout, space } from '@/theme/tokens';
 
 /** Shared page frame: capped width, even gutters, one scroll area. */
@@ -24,22 +25,27 @@ export function PageHeader({
   title,
   subtitle,
   action,
+  breadcrumbs,
 }: {
   title: string;
   subtitle?: string;
   action?: ReactNode;
+  breadcrumbs?: Crumb[];
 }) {
   return (
-    <View style={styles.header}>
-      <View style={styles.headerText}>
-        <AppText variant="heading">{title}</AppText>
-        {subtitle ? (
-          <AppText variant="body" tone="muted">
-            {subtitle}
-          </AppText>
-        ) : null}
+    <View style={styles.pageHeader}>
+      {breadcrumbs && breadcrumbs.length > 0 ? <Breadcrumbs items={breadcrumbs} /> : null}
+      <View style={styles.header}>
+        <View style={styles.headerText}>
+          <AppText variant="heading">{title}</AppText>
+          {subtitle ? (
+            <AppText variant="small" tone="muted">
+              {subtitle}
+            </AppText>
+          ) : null}
+        </View>
+        {action ? <View style={styles.headerAction}>{action}</View> : null}
       </View>
-      {action ? <View style={styles.headerAction}>{action}</View> : null}
     </View>
   );
 }
@@ -56,6 +62,9 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: layout.contentMax,
     gap: space.xxl,
+  },
+  pageHeader: {
+    gap: space.sm,
   },
   header: {
     flexDirection: 'row',

@@ -21,6 +21,7 @@ import {
   setTokens,
 } from './api';
 import { isWeb } from './config';
+import { clearPhotoCache } from './photo';
 
 /** Native only. The web flow keeps its refresh token in an httpOnly cookie. */
 const REFRESH_KEY = 'leave.refreshToken';
@@ -94,6 +95,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const clearLocal = useCallback(async () => {
     setTokens({ accessToken: null, refreshToken: null });
+    clearPhotoCache();
     await writeStoredRefreshToken(null);
     setState({
       status: 'signedOut',

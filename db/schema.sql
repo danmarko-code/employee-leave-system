@@ -33,6 +33,8 @@ CREATE TABLE users (
   position            VARCHAR(100)    NOT NULL DEFAULT '',
   department          VARCHAR(100)    NOT NULL DEFAULT '',
   phone               VARCHAR(30)     NULL,
+  -- Random UUID stem for <stem>.webp / <stem>_thumb.webp outside the web root.
+  photo_path          VARCHAR(36)     NULL,
   is_active           TINYINT(1)      NOT NULL DEFAULT 1,
   failed_attempts     SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   locked_until        DATETIME        NULL,
@@ -50,7 +52,8 @@ CREATE TABLE users (
   CONSTRAINT chk_users_email_form CHECK (email LIKE '%_@_%._%'),
   CONSTRAINT chk_users_role       CHECK (role IN ('employee','admin')),
   CONSTRAINT chk_users_is_active  CHECK (is_active IN (0,1)),
-  CONSTRAINT chk_users_phone_len  CHECK (phone IS NULL OR CHAR_LENGTH(phone) <= 30)
+  CONSTRAINT chk_users_phone_len  CHECK (phone IS NULL OR CHAR_LENGTH(phone) <= 30),
+  CONSTRAINT chk_users_photo_path CHECK (photo_path IS NULL OR photo_path REGEXP '^[0-9a-f-]{36}$')
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------------------------------------------------------

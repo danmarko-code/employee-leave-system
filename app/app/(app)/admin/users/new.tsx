@@ -75,7 +75,10 @@ function CreateUserForm() {
       <PageHeader
         title="Add employee"
         subtitle="Create an account. There is no self-sign-up, so accounts start here."
-        action={<Button label="Back" variant="ghost" size="sm" icon="chevron-back" onPress={() => router.back()} />}
+        breadcrumbs={[
+          { label: 'Employees', href: '/admin/users' },
+          { label: 'Add employee' },
+        ]}
       />
 
       <Card style={styles.formCard}>

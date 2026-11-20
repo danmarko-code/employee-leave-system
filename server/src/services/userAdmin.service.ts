@@ -23,6 +23,7 @@ interface UserRow extends RowDataPacket {
   phone: string | null;
   is_active: number;
   created_at: string;
+  last_used_at: string | null;
 }
 
 export function toAdminDto(row: UserRow): AdminUserDto {
@@ -36,6 +37,7 @@ export function toAdminDto(row: UserRow): AdminUserDto {
     phone: row.phone,
     isActive: row.is_active === 1,
     createdAt: `${row.created_at.replace(' ', 'T')}Z`,
+    lastUsedAt: row.last_used_at ? `${row.last_used_at.replace(' ', 'T')}Z` : null,
   };
 }
 
@@ -54,12 +56,15 @@ export async function listUsers(
 
   const rows = await query<UserRow>(
     pool,
-    `SELECT id, name, email, role, position, department, phone, is_active, created_at
-       FROM users
-      WHERE (? IS NULL OR role = ?)
-        AND (? IS NULL OR is_active = ?)
-        AND (? IS NULL OR name LIKE ? OR email LIKE ?)
-      ORDER BY created_at DESC, id DESC
+    `SELECT u.id, u.name, u.email, u.role, u.position, u.department, u.phone, u.is_active, u.created_at,
+            MAX(rt.last_used_at) AS last_used_at
+       FROM users u
+       LEFT JOIN refresh_tokens rt ON rt.user_id = u.id
+      WHERE (? IS NULL OR u.role = ?)
+        AND (? IS NULL OR u.is_active = ?)
+        AND (? IS NULL OR u.name LIKE ? OR u.email LIKE ?)
+      GROUP BY u.id, u.name, u.email, u.role, u.position, u.department, u.phone, u.is_active, u.created_at
+      ORDER BY u.created_at DESC, u.id DESC
       LIMIT ? OFFSET ?`,
     [role, role, isActive, isActive, search, search, search, filters.pageSize, offset]
   );
@@ -84,8 +89,12 @@ export async function listUsers(
 export async function getUser(pool: Pool, id: number): Promise<AdminUserDto> {
   const row = await queryOne<UserRow>(
     pool,
-    `SELECT id, name, email, role, position, department, phone, is_active, created_at
-       FROM users WHERE id = ?`,
+    `SELECT u.id, u.name, u.email, u.role, u.position, u.department, u.phone, u.is_active, u.created_at,
+            MAX(rt.last_used_at) AS last_used_at
+       FROM users u
+       LEFT JOIN refresh_tokens rt ON rt.user_id = u.id
+      WHERE u.id = ?
+      GROUP BY u.id, u.name, u.email, u.role, u.position, u.department, u.phone, u.is_active, u.created_at`,
     [id]
   );
   if (!row) throw notFound();

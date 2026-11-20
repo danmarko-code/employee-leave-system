@@ -201,11 +201,41 @@ function AdminHome() {
       ) : null}
 
       <View style={styles.statsRow}>
-        <StatTile label="Waiting" value={stats?.pending ?? '–'} tone="warning" icon="time-outline" />
-        <StatTile label="Approved" value={stats?.approved ?? '–'} tone="success" icon="checkmark-circle-outline" />
-        <StatTile label="Rejected" value={stats?.rejected ?? '–'} tone="danger" icon="close-circle-outline" />
-        <StatTile label="Active people" value={stats?.activeEmployees ?? '–'} tone="brand" icon="people-outline" />
-        <StatTile label="Leave types" value={stats?.activeLeaveTypes ?? '–'} tone="brand" icon="albums-outline" />
+        <StatTile
+          label="Waiting"
+          value={stats?.pending ?? '–'}
+          tone="warning"
+          icon="time-outline"
+          onPress={() => router.push('/approvals')}
+        />
+        <StatTile
+          label="Approved"
+          value={stats?.approved ?? '–'}
+          tone="success"
+          icon="checkmark-circle-outline"
+          onPress={() => router.push('/admin/leave-types')}
+        />
+        <StatTile
+          label="Rejected"
+          value={stats?.rejected ?? '–'}
+          tone="danger"
+          icon="close-circle-outline"
+          onPress={() => router.push('/admin/activity')}
+        />
+        <StatTile
+          label="Active employees"
+          value={stats?.activeEmployees ?? '–'}
+          tone="brand"
+          icon="people-outline"
+          onPress={() => router.push('/admin/users')}
+        />
+        <StatTile
+          label="Active leave types"
+          value={stats?.activeLeaveTypes ?? '–'}
+          tone="brand"
+          icon="albums-outline"
+          onPress={() => router.push('/admin/leave-types')}
+        />
       </View>
 
       <View style={styles.section}>

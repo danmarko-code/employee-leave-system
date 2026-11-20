@@ -36,6 +36,8 @@ export interface AppConfig {
     globalMax: number;
     loginMax: number;
     refreshMax: number;
+    /** Photo uploads, per client IP, in the shared window. */
+    photoMax: number;
     windowMs: number;
   };
   /** Absolute directory for supporting documents; never served statically. */
@@ -63,6 +65,7 @@ const ENV_SCHEMA = z.object({
   GLOBAL_RATE_LIMIT_MAX: z.string().optional(),
   LOGIN_RATE_LIMIT_MAX: z.string().optional(),
   REFRESH_RATE_LIMIT_MAX: z.string().optional(),
+  PHOTO_RATE_LIMIT_MAX: z.string().optional(),
   UPLOAD_DIR: z.string().optional(),
 });
 
@@ -205,6 +208,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       globalMax: toInt('GLOBAL_RATE_LIMIT_MAX', raw.GLOBAL_RATE_LIMIT_MAX, 300, 10, 100000),
       loginMax: toInt('LOGIN_RATE_LIMIT_MAX', raw.LOGIN_RATE_LIMIT_MAX, 10, 3, 1000),
       refreshMax: toInt('REFRESH_RATE_LIMIT_MAX', raw.REFRESH_RATE_LIMIT_MAX, 60, 3, 1000),
+      photoMax: toInt('PHOTO_RATE_LIMIT_MAX', raw.PHOTO_RATE_LIMIT_MAX, 20, 2, 1000),
       windowMs: 15 * 60 * 1000,
     },
     uploadDir: resolveUploadDir(raw.UPLOAD_DIR),

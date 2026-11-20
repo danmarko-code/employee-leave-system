@@ -68,8 +68,11 @@ function UserEditor() {
     <Screen>
       <PageHeader
         title="Edit account"
-        subtitle={account ? account.email : 'Load the account to edit it.'}
-        action={<Button label="Back" variant="ghost" size="sm" icon="chevron-back" onPress={() => router.back()} />}
+        subtitle={account ? account.email : undefined}
+        breadcrumbs={[
+          { label: 'Employees', href: '/admin/users' },
+          { label: account ? account.name : 'Edit account' },
+        ]}
       />
 
       {error ? (

@@ -11,10 +11,12 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { AppText } from './Text';
-import { colors, fonts, radius, space } from '@/theme/tokens';
+import { colors, fonts, fontSize, radius, space } from '@/theme/tokens';
 
 export interface TextFieldProps extends Omit<TextInputProps, 'style' | 'secureTextEntry'> {
   label: string;
+  /** Helper line shown under the field (e.g. a password strength hint). */
+  hint?: string;
   error?: string | null;
   secure?: boolean;
   inputRef?: React.Ref<TextInputInstance>;
@@ -22,6 +24,7 @@ export interface TextFieldProps extends Omit<TextInputProps, 'style' | 'secureTe
 
 export function TextField({
   label,
+  hint,
   error,
   secure = false,
   inputRef,
@@ -35,7 +38,7 @@ export function TextField({
   const fallbackRef = useRef<TextInputInstance>(null);
   const ref = inputRef ?? fallbackRef;
 
-  const borderColor = error ? colors.danger : focused ? colors.brand : colors.border;
+  const borderColor = error ? colors.danger : focused ? colors.brand : colors.borderStrong;
 
   return (
     <View style={styles.group}>
@@ -62,7 +65,7 @@ export function TextField({
           placeholderTextColor={colors.faint}
           selectionColor={colors.brand}
           accessibilityLabel={label}
-          accessibilityHint={error ?? undefined}
+          accessibilityHint={error ?? hint ?? rest.accessibilityHint}
           onFocus={(event) => {
             setFocused(true);
             onFocus?.(event);
@@ -84,18 +87,13 @@ export function TextField({
             onPress={() => setRevealed((current) => !current)}
             accessibilityRole="button"
             accessibilityLabel={revealed ? 'Hide password' : 'Show password'}
-            hitSlop={8}
             style={({ pressed }) => [
               styles.reveal,
               pressed && { backgroundColor: colors.surfaceMuted },
-              Platform.OS === 'web' ? ({ cursor: 'pointer', outlineStyle: 'none' } as unknown as ViewStyle) : null,
+              Platform.OS === 'web' ? ({ cursor: 'pointer' } as unknown as ViewStyle) : null,
             ]}
           >
-            <Ionicons
-              name={revealed ? 'eye-off-outline' : 'eye-outline'}
-              size={20}
-              color={colors.muted}
-            />
+            <Ionicons name={revealed ? 'eye-off-outline' : 'eye-outline'} size={20} color={colors.muted} />
           </Pressable>
         ) : null}
       </View>
@@ -107,6 +105,10 @@ export function TextField({
             {error}
           </AppText>
         </View>
+      ) : hint ? (
+        <AppText variant="small" tone="faint">
+          {hint}
+        </AppText>
       ) : null}
     </View>
   );
@@ -114,38 +116,37 @@ export function TextField({
 
 const styles = StyleSheet.create({
   group: {
-    gap: space.xs + 2,
+    gap: space.xs,
   },
   field: {
     flexDirection: 'row',
     alignItems: 'center',
-    minHeight: 48,
+    minHeight: 44,
     borderWidth: 1,
     borderRadius: radius.control,
     backgroundColor: colors.surface,
     paddingLeft: space.md,
   },
   fieldFocused: {
-    shadowColor: colors.brand,
-    shadowOpacity: 0.18,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 0 },
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: `0 0 0 2px ${colors.brandSoft}` } as unknown as ViewStyle)
+      : null),
   },
   fieldError: {
-    backgroundColor: '#FFFBFB',
+    backgroundColor: colors.surface,
   },
   input: {
     flex: 1,
-    minHeight: 46,
+    minHeight: 42,
     paddingVertical: 0,
     paddingRight: space.md,
     fontFamily: fonts.regular,
-    fontSize: 15,
+    fontSize: fontSize.body,
     color: colors.ink,
   },
   reveal: {
-    width: 40,
-    height: 46,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
     borderTopRightRadius: radius.control,
@@ -154,6 +155,6 @@ const styles = StyleSheet.create({
   errorRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: space.xs + 2,
+    gap: space.xs,
   },
 });

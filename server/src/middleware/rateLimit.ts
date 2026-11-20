@@ -34,3 +34,8 @@ export function loginLimiter(config: AppConfig): RequestHandler {
 export function refreshLimiter(config: AppConfig): RequestHandler {
   return limiter(config, config.rateLimits.refreshMax);
 }
+
+/** Photo uploads are heavier than normal writes; keep them on a short leash. */
+export function photoUploadLimiter(config: AppConfig): RequestHandler {
+  return limiter(config, config.rateLimits.photoMax);
+}

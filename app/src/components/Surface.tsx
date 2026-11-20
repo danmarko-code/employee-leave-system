@@ -1,12 +1,17 @@
 import type { ReactNode } from 'react';
-import { StyleSheet, View, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { LeaveStatus } from '@leave/shared';
 import { AppText } from './Text';
 import { Button } from './Button';
-import { colors, fonts, radius, shadow, space } from '@/theme/tokens';
-import { initials } from '@/lib/format';
+import { Badge, StatusBadge } from './Badge';
+import { colors, fonts, radius, space } from '@/theme/tokens';
 
+export { Avatar } from './Avatar';
+export { EmptyState } from './EmptyState';
+export { StatusBadge, Badge } from './Badge';
+
+/** Flat panel: 1px border, 8px radius, no shadow. */
 export function Card({
   children,
   style,
@@ -43,62 +48,9 @@ export function SectionTitle({
   );
 }
 
-const STATUS: Record<
-  LeaveStatus,
-  { label: string; color: string; background: string }
-> = {
-  pending: { label: 'Pending', color: colors.warning, background: colors.warningSoft },
-  approved: { label: 'Approved', color: colors.success, background: colors.successSoft },
-  rejected: { label: 'Rejected', color: colors.danger, background: colors.dangerSoft },
-};
-
+/** @deprecated use StatusBadge. Kept so existing screens keep compiling. */
 export function StatusPill({ status }: { status: LeaveStatus }) {
-  const style = STATUS[status];
-  return (
-    <View style={[styles.pill, { backgroundColor: style.background }]}>
-      <View style={[styles.pillDot, { backgroundColor: style.color }]} />
-      <AppText variant="micro" style={{ color: style.color, fontFamily: fonts.medium }}>
-        {style.label}
-      </AppText>
-    </View>
-  );
-}
-
-export function Avatar({
-  name,
-  size = 'md',
-  tone = 'light',
-}: {
-  name: string;
-  size?: 'sm' | 'md' | 'lg';
-  tone?: 'light' | 'dark';
-}) {
-  const dimensions = size === 'lg' ? 56 : size === 'sm' ? 30 : 38;
-  return (
-    <View
-      style={[
-        styles.avatar,
-        {
-          width: dimensions,
-          height: dimensions,
-          borderRadius: radius.pill,
-          backgroundColor: tone === 'dark' ? 'rgba(255,255,255,0.12)' : colors.brandSoft,
-        },
-      ]}
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
-    >
-      <AppText
-        variant={size === 'lg' ? 'title' : size === 'sm' ? 'micro' : 'small'}
-        style={{
-          color: tone === 'dark' ? colors.onDark : colors.brandInk,
-          fontFamily: fonts.semibold,
-        }}
-      >
-        {initials(name)}
-      </AppText>
-    </View>
-  );
+  return <StatusBadge status={status} />;
 }
 
 type NoticeTone = 'error' | 'info' | 'success' | 'warning';
@@ -126,38 +78,13 @@ export function Notice({ tone = 'info', children }: { tone?: NoticeTone; childre
   );
 }
 
-export function EmptyState({
-  icon,
-  title,
-  body,
-  action,
+export function Skeleton({
+  height = 16,
+  width = '100%' as const,
 }: {
-  icon: keyof typeof Ionicons.glyphMap;
-  title: string;
-  body: string;
-  action?: { label: string; onPress: () => void };
+  height?: number;
+  width?: number | `${number}%`;
 }) {
-  return (
-    <View style={styles.empty}>
-      <View style={styles.emptyIcon}>
-        <Ionicons name={icon} size={22} color={colors.brand} />
-      </View>
-      <AppText variant="lead" strong>
-        {title}
-      </AppText>
-      <AppText variant="small" tone="muted" style={styles.emptyBody}>
-        {body}
-      </AppText>
-      {action ? (
-        <View style={styles.emptyAction}>
-          <Button label={action.label} variant="secondary" size="sm" onPress={action.onPress} />
-        </View>
-      ) : null}
-    </View>
-  );
-}
-
-export function Skeleton({ height = 16, width = '100%' as const }: { height?: number; width?: number | `${number}%` }) {
   return <View style={[styles.skeleton, { height, width }]} accessibilityElementsHidden />;
 }
 
@@ -166,11 +93,13 @@ export function StatTile({
   value,
   tone = 'brand',
   icon,
+  onPress,
 }: {
   label: string;
   value: number | string;
   tone?: 'brand' | 'warning' | 'success' | 'danger';
   icon?: keyof typeof Ionicons.glyphMap;
+  onPress?: () => void;
 }) {
   const accent =
     tone === 'warning'
@@ -182,24 +111,33 @@ export function StatTile({
           : colors.brand;
 
   return (
-    <View style={styles.stat}>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityLabel={onPress ? `View ${label.toLowerCase()}` : undefined}
+      style={({ pressed }: { pressed: boolean }) => [
+        styles.stat,
+        pressed && onPress && { backgroundColor: colors.surfaceMuted },
+      ]}
+    >
       <View style={styles.statTop}>
         <AppText variant="micro" tone="muted" style={styles.statLabel}>
           {label}
         </AppText>
-        {icon ? <Ionicons name={icon} size={16} color={accent} /> : null}
+        {icon ? <Ionicons name={icon} size={16} color={colors.faint} /> : null}
       </View>
-      <AppText variant="heading" tabular style={{ color: accent }}>
+      <AppText variant="heading" tabular style={{ color: colors.ink }}>
         {value}
       </AppText>
-    </View>
+      <View style={[styles.statRule, { backgroundColor: accent }]} />
+    </Pressable>
   );
 }
 
 export function KeyValue({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.keyValue}>
-      <AppText variant="small" tone="muted">
+      <AppText variant="micro" tone="muted">
         {label}
       </AppText>
       <AppText variant="body">{value}</AppText>
@@ -213,10 +151,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.card,
     borderWidth: 1,
     borderColor: colors.border,
-    ...(shadow.card as object),
   },
   cardPadded: {
-    padding: space.xl,
+    padding: space.lg,
   },
   sectionRow: {
     flexDirection: 'row',
@@ -226,25 +163,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   sectionText: {
-    gap: space.xxs,
-  },
-  pill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.xs + 2,
-    paddingVertical: 3,
-    paddingHorizontal: space.sm + 2,
-    borderRadius: radius.pill,
-    alignSelf: 'flex-start',
-  },
-  pillDot: {
-    width: 6,
-    height: 6,
-    borderRadius: radius.pill,
-  },
-  avatar: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    gap: 2,
   },
   notice: {
     flexDirection: 'row',
@@ -253,31 +172,9 @@ const styles = StyleSheet.create({
     padding: space.md,
     borderRadius: radius.control,
   },
-  empty: {
-    alignItems: 'center',
-    gap: space.sm,
-    paddingVertical: space.xxxl,
-    paddingHorizontal: space.xl,
-  },
-  emptyIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.pill,
-    backgroundColor: colors.brandSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: space.xs,
-  },
-  emptyAction: {
-    marginTop: space.sm,
-  },
-  emptyBody: {
-    textAlign: 'center',
-    maxWidth: 320,
-  },
   skeleton: {
     backgroundColor: colors.surfaceSunken,
-    borderRadius: radius.control,
+    borderRadius: radius.sm,
   },
   stat: {
     flex: 1,
@@ -296,6 +193,12 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     flexShrink: 1,
+  },
+  statRule: {
+    height: 2,
+    width: 24,
+    borderRadius: radius.sm,
+    marginTop: space.xs,
   },
   keyValue: {
     gap: 2,

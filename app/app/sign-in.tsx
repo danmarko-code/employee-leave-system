@@ -4,7 +4,6 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  useWindowDimensions,
   View,
   type TextInputInstance,
 } from 'react-native';
@@ -18,85 +17,38 @@ import { TextField } from '@/components/TextField';
 import { BootScreen } from '@/components/BootScreen';
 import { ApiError } from '@/lib/api';
 import { sessionErrorMessage, useSession } from '@/lib/session';
-import { brand, colors, fonts, layout, radius, space } from '@/theme/tokens';
+import { brand, colors, fonts, space } from '@/theme/tokens';
 
 export default function SignInScreen() {
   const { status, restoreError } = useSession();
-  const { width } = useWindowDimensions();
 
   if (status === 'restoring') return <BootScreen />;
   if (status === 'signedIn') return <Redirect href="/home" />;
-
-  const wide = width >= layout.wideBreakpoint;
 
   return (
     <KeyboardAvoidingView
       style={styles.root}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      {wide ? (
-        <View style={styles.wideRow}>
-          <BrandPanel />
-          <ScrollView contentContainerStyle={styles.formPanel} keyboardShouldPersistTaps="handled">
-            <View style={styles.formColumn}>
-              <SignInForm restoreError={restoreError} />
-            </View>
-          </ScrollView>
-        </View>
-      ) : (
-        <ScrollView
-          style={styles.root}
-          contentContainerStyle={styles.narrowContent}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.narrowBrand}>
-            <View style={styles.brandRow}>
-              <BrandMark size={30} />
-              <AppText variant="lead" style={styles.brandName}>
-                {brand.name}
-              </AppText>
-            </View>
-            <AppText variant="small" style={styles.brandTagline}>
-              {brand.tagline}
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <View style={styles.column}>
+          <View style={styles.brandRow}>
+            <BrandMark size={32} />
+            <AppText variant="title" style={styles.brandName}>
+              {brand.name}
             </AppText>
           </View>
-          <Card style={styles.narrowCard}>
+
+          <Card style={styles.card}>
             <SignInForm restoreError={restoreError} />
           </Card>
-        </ScrollView>
-      )}
-    </KeyboardAvoidingView>
-  );
-}
 
-function BrandPanel() {
-  return (
-    <View style={styles.panel}>
-      <View style={styles.brandRow}>
-        <BrandMark size={34} />
-        <View>
-          <AppText variant="lead" style={styles.brandName}>
-            {brand.name}
-          </AppText>
-          <AppText variant="micro" style={styles.brandMuted}>
-            {brand.tagline}
+          <AppText variant="small" tone="faint" style={styles.foot}>
+            Accounts are managed by an administrator.
           </AppText>
         </View>
-      </View>
-
-      <View style={styles.panelMiddle}>
-        <AppText variant="display" style={styles.panelHeadline}>
-          Requests, approvals and balances in one place.
-        </AppText>
-        <AppText variant="body" style={styles.brandMuted}>
-          Sign in with the account your administrator created for you.
-        </AppText>
-      </View>
-
-      <AppText variant="micro" style={styles.brandMuted}>
-        Internal use · Employee and administrator accounts
-      </AppText>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -141,12 +93,7 @@ function SignInForm({ restoreError }: { restoreError: string | null }) {
 
   return (
     <View style={styles.form}>
-      <View style={styles.formHeading}>
-        <AppText variant="heading">Sign in</AppText>
-        <AppText variant="body" tone="muted">
-          Use your work email and password.
-        </AppText>
-      </View>
+      <AppText variant="title">Sign in</AppText>
 
       {restoreError ? <Notice tone="info">{restoreError}</Notice> : null}
       {formError ? <Notice tone="error">{formError}</Notice> : null}
@@ -193,10 +140,6 @@ function SignInForm({ restoreError }: { restoreError: string | null }) {
       />
 
       <Button label="Sign in" onPress={() => void submit()} loading={submitting} fullWidth />
-
-      <AppText variant="small" tone="faint" style={styles.formFoot}>
-        Accounts are created and passwords reset by an administrator.
-      </AppText>
     </View>
   );
 }
@@ -206,75 +149,34 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.canvas,
   },
-  wideRow: {
-    flex: 1,
-    flexDirection: 'row',
+  content: {
+    flexGrow: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: space.lg,
   },
-  panel: {
-    flex: 0.95,
-    maxWidth: 560,
-    backgroundColor: colors.sidebar,
-    padding: space.giant,
-    justifyContent: 'space-between',
-    gap: space.xxxl,
-  },
-  panelMiddle: {
+  column: {
+    width: '100%',
+    maxWidth: 400,
     gap: space.lg,
-    maxWidth: 420,
-  },
-  panelHeadline: {
-    color: colors.onDark,
   },
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: space.md,
+    paddingLeft: space.xxs,
   },
   brandName: {
-    color: colors.onDark,
+    color: colors.ink,
     fontFamily: fonts.semibold,
   },
-  brandTagline: {
-    color: colors.onDarkMuted,
-  },
-  brandMuted: {
-    color: colors.onDarkMuted,
-  },
-  formPanel: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: space.xxxl,
-  },
-  formColumn: {
-    width: '100%',
-    maxWidth: 380,
+  card: {
+    padding: space.xl,
   },
   form: {
     gap: space.lg,
   },
-  formHeading: {
-    gap: space.xs,
-    marginBottom: space.xs,
-  },
-  formFoot: {
+  foot: {
     textAlign: 'center',
-  },
-  narrowContent: {
-    flexGrow: 1,
-    paddingBottom: space.xxxl,
-  },
-  narrowBrand: {
-    backgroundColor: colors.sidebar,
-    paddingHorizontal: space.xl,
-    paddingTop: space.huge,
-    paddingBottom: space.xxxl,
-    gap: space.xs,
-  },
-  narrowCard: {
-    marginHorizontal: space.lg,
-    marginTop: space.lg,
-    borderRadius: radius.card,
-    padding: space.xl,
   },
 });

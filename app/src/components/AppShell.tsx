@@ -6,10 +6,12 @@ import { usePathname, useRouter } from 'expo-router';
 import { AppText } from './Text';
 import { Avatar } from './Surface';
 import { BrandMark } from './Brand';
+import { IdleSessionGuard } from './IdleSessionGuard';
 import { brand, colors, fonts, layout, radius, space } from '@/theme/tokens';
-import { formatDateTime, roleLabel } from '@/lib/format';
+import { roleLabel } from '@/lib/format';
 import { BOTTOM_ITEMS, navItemsFor, overflowItemsFor, type NavItem } from '@/lib/navigation';
 import { useSession } from '@/lib/session';
+import { usePhoto } from '@/lib/photo';
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { width } = useWindowDimensions();
@@ -19,7 +21,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   return wide ? (
     <View style={styles.wideRoot}>
       <Sidebar />
-      <View style={styles.wideContent}>{children}</View>
+      <View style={styles.wideContent}>
+        <IdleSessionGuard>{children}</IdleSessionGuard>
+      </View>
     </View>
   ) : (
     <View style={styles.narrowRoot}>
@@ -32,7 +36,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         </View>
         <MobileProfileButton />
       </View>
-      <View style={styles.narrowContent}>{children}</View>
+      <View style={styles.narrowContent}>
+        <IdleSessionGuard>{children}</IdleSessionGuard>
+      </View>
       <BottomBar bottomInset={insets.bottom} />
     </View>
   );
@@ -41,7 +47,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, sessionExpiresAt, signOut } = useSession();
+  const { user, signOut } = useSession();
+  const photo = usePhoto(user?.id, 'thumb');
   if (!user) return null;
 
   const items = navItemsFor(user.role);
@@ -53,9 +60,6 @@ function Sidebar() {
         <View style={styles.brandText}>
           <AppText variant="lead" style={{ color: colors.onDark, fontFamily: fonts.semibold }}>
             {brand.name}
-          </AppText>
-          <AppText variant="micro" style={{ color: colors.onDarkMuted }}>
-            {brand.tagline}
           </AppText>
         </View>
       </View>
@@ -73,7 +77,7 @@ function Sidebar() {
 
       <View style={styles.sideFooter}>
         <View style={styles.userRow}>
-          <Avatar name={user.name} tone="dark" />
+          <Avatar name={user.name} photo={photo} tone="dark" />
           <View style={styles.userText}>
             <AppText variant="small" style={{ color: colors.onDark, fontFamily: fonts.medium }} numberOfLines={1}>
               {user.name}
@@ -96,11 +100,6 @@ function Sidebar() {
             <Ionicons name="log-out-outline" size={20} color={colors.onDarkMuted} />
           </Pressable>
         </View>
-        {sessionExpiresAt ? (
-          <AppText variant="micro" style={{ color: colors.onDarkMuted }}>
-            Session ends {formatDateTime(sessionExpiresAt)}
-          </AppText>
-        ) : null}
       </View>
     </View>
   );
@@ -142,6 +141,7 @@ function SidebarItem({ item, active, onPress }: { item: NavItem; active: boolean
 function MobileProfileButton() {
   const router = useRouter();
   const { user } = useSession();
+  const photo = usePhoto(user?.id, 'thumb');
   if (!user) return null;
   return (
     <Pressable
@@ -153,7 +153,7 @@ function MobileProfileButton() {
         Platform.OS === 'web' ? ({ cursor: 'pointer', outlineStyle: 'none' } as unknown as ViewStyle) : null,
       ]}
     >
-      <Avatar name={user.name} size="sm" />
+      <Avatar name={user.name} photo={photo} size="sm" />
     </Pressable>
   );
 }

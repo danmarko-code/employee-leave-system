@@ -70,4 +70,5 @@ export interface AdminUserDto {
   phone: string | null;
   isActive: boolean;
   createdAt: string;
+  lastUsedAt: string | null;
 }

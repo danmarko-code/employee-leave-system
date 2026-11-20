@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { LIMITS } from '@leave/shared';
 import { PageHeader, Screen } from '@/components/Screen';
 import { AppText } from '@/components/Text';
 import { Button } from '@/components/Button';
-import { Avatar, Card, KeyValue, Notice, SectionTitle } from '@/components/Surface';
+import { ProfilePhotoCard } from '@/components/ProfilePhotoCard';
+import { Card, KeyValue, Notice, SectionTitle } from '@/components/Surface';
 import { TextField } from '@/components/TextField';
 import { ApiError } from '@/lib/api';
 import { formatDateTime, roleLabel } from '@/lib/format';
 import { sessionErrorMessage, useSession } from '@/lib/session';
-import { colors, fonts, radius, space } from '@/theme/tokens';
+import { colors, space } from '@/theme/tokens';
 
 export default function ProfileScreen() {
   const { user, sessionExpiresAt, savePhone, signOut } = useSession();
@@ -20,26 +20,12 @@ export default function ProfileScreen() {
     <Screen>
       <PageHeader title="Profile" subtitle="Your account details and current session." />
 
+      <ProfilePhotoCard user={user} />
+
       <View style={styles.columns}>
         <Card style={styles.column}>
-          <View style={styles.identity}>
-            <Avatar name={user.name} size="lg" />
-            <View style={styles.identityText}>
-              <AppText variant="title">{user.name}</AppText>
-              <View style={styles.rolePill}>
-                <Ionicons
-                  name={user.role === 'admin' ? 'shield-checkmark-outline' : 'person-outline'}
-                  size={13}
-                  color={colors.brandInk}
-                />
-                <AppText variant="micro" style={{ color: colors.brandInk, fontFamily: fonts.medium }}>
-                  {roleLabel(user.role)}
-                </AppText>
-              </View>
-            </View>
-          </View>
-
           <View style={styles.details}>
+            <KeyValue label="Role" value={roleLabel(user.role)} />
             <KeyValue label="Email" value={user.email} />
             <KeyValue label="Position" value={user.position || 'Not set'} />
             <KeyValue label="Department" value={user.department || 'Not set'} />
@@ -165,25 +151,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexBasis: 320,
     gap: space.lg,
-  },
-  identity: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.lg,
-  },
-  identityText: {
-    gap: space.xs,
-    flexShrink: 1,
-  },
-  rolePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.xs + 1,
-    alignSelf: 'flex-start',
-    paddingVertical: 3,
-    paddingHorizontal: space.sm + 2,
-    borderRadius: radius.pill,
-    backgroundColor: colors.brandSoft,
   },
   details: {
     gap: space.md,

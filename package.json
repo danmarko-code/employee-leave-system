@@ -14,6 +14,7 @@
   ],
   "scripts": {
     "db:apply": "node db/apply.mjs",
+    "db:migrate": "node db/migrate.mjs",
     "db:seed": "node db/seed.mjs",
     "build:shared": "npm run build -w @leave/shared",
     "dev:server": "npm run dev -w @leave/server",

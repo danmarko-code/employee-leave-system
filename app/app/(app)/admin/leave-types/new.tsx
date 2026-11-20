@@ -43,7 +43,10 @@ function LeaveTypeCreate() {
       <PageHeader
         title="Add leave type"
         subtitle="Entitlement counts working days (Monday to Friday) per calendar year."
-        action={<Button label="Back" variant="ghost" size="sm" icon="chevron-back" onPress={() => router.back()} />}
+        breadcrumbs={[
+          { label: 'Leave types', href: '/admin/leave-types' },
+          { label: 'Add leave type' },
+        ]}
       />
       <Card style={styles.card}>
         <LeaveTypeForm

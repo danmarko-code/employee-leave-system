@@ -1,4 +1,12 @@
-import { ActivityIndicator, Platform, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
+import { useState } from 'react';
+import {
+  ActivityIndicator,
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+  type ViewStyle,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { AppText } from './Text';
 import { colors, fonts, radius, space } from '@/theme/tokens';
@@ -21,21 +29,21 @@ const BACKGROUND: Record<Variant, string> = {
   primary: colors.brand,
   secondary: colors.surface,
   ghost: 'transparent',
-  danger: colors.dangerSoft,
+  danger: colors.danger,
 };
 
 const BACKGROUND_PRESSED: Record<Variant, string> = {
   primary: colors.brandPressed,
   secondary: colors.surfaceMuted,
-  ghost: colors.brandSoft,
-  danger: '#F2D3D0',
+  ghost: colors.surfaceMuted,
+  danger: '#8F1B13',
 };
 
 const LABEL_COLOR: Record<Variant, string> = {
   primary: colors.onDark,
   secondary: colors.ink,
   ghost: colors.muted,
-  danger: colors.danger,
+  danger: colors.onDark,
 };
 
 export function Button({
@@ -49,8 +57,9 @@ export function Button({
   size = 'md',
   accessibilityHint,
 }: ButtonProps) {
+  const [focused, setFocused] = useState(false);
   const inactive = disabled || loading;
-  const labelColor = variant === 'primary' ? LABEL_COLOR.primary : LABEL_COLOR[variant];
+  const labelColor = LABEL_COLOR[variant];
 
   return (
     <Pressable
@@ -60,22 +69,20 @@ export function Button({
       accessibilityLabel={label}
       accessibilityHint={accessibilityHint}
       accessibilityState={{ disabled: inactive, busy: loading }}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
       style={({ pressed }) => [
         styles.base,
         size === 'sm' && styles.small,
         fullWidth && styles.fullWidth,
         {
           backgroundColor: pressed ? BACKGROUND_PRESSED[variant] : BACKGROUND[variant],
-          borderColor: variant === 'secondary' ? colors.border : 'transparent',
+          borderColor: variant === 'secondary' ? colors.borderStrong : 'transparent',
           opacity: disabled ? 0.5 : 1,
         },
-        variant === 'primary' && !disabled && styles.primaryShadow,
+        focused && styles.focus,
         Platform.OS === 'web'
-          ? ({
-              cursor: inactive ? 'default' : 'pointer',
-              outlineStyle: 'none',
-              transitionDuration: '120ms',
-            } as unknown as ViewStyle)
+          ? ({ cursor: inactive ? 'default' : 'pointer', transitionDuration: '120ms' } as unknown as ViewStyle)
           : null,
       ]}
     >
@@ -99,18 +106,24 @@ export function Button({
 const styles = StyleSheet.create({
   base: {
     minHeight: 44,
-    paddingHorizontal: space.xl,
+    paddingHorizontal: space.lg,
     borderRadius: radius.control,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   small: {
-    minHeight: 36,
-    paddingHorizontal: space.lg,
+    minHeight: 44,
+    paddingHorizontal: space.md,
   },
   fullWidth: {
     alignSelf: 'stretch',
+  },
+  focus: {
+    borderColor: colors.focus,
+    ...(Platform.OS === 'web'
+      ? ({ boxShadow: `0 0 0 2px ${colors.canvas}, 0 0 0 4px ${colors.focus}` } as unknown as ViewStyle)
+      : null),
   },
   row: {
     flexDirection: 'row',
@@ -118,22 +131,15 @@ const styles = StyleSheet.create({
     gap: space.sm,
   },
   iconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: radius.pill,
+    width: 44,
+    height: 44,
+    borderRadius: radius.control,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  primaryShadow: {
-    shadowColor: '#0A2533',
-    shadowOpacity: 0.14,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 2,
-  },
 });
 
-/** Circular icon-only control, used for the password reveal and sign-out. */
+/** Square icon-only control for reveal, sign-out and similar actions. */
 export function IconButton({
   icon,
   onPress,
@@ -147,6 +153,7 @@ export function IconButton({
   tone?: 'muted' | 'inverse' | 'danger';
   disabled?: boolean;
 }) {
+  const [focused, setFocused] = useState(false);
   const color = tone === 'inverse' ? colors.onDarkMuted : tone === 'danger' ? colors.danger : colors.muted;
   return (
     <Pressable
@@ -155,11 +162,14 @@ export function IconButton({
       accessibilityRole="button"
       accessibilityLabel={label}
       hitSlop={8}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
       style={({ pressed }) => [
         styles.iconButton,
         pressed && { backgroundColor: colors.surfaceMuted },
+        focused && styles.focus,
         Platform.OS === 'web'
-          ? ({ cursor: disabled ? 'default' : 'pointer', outlineStyle: 'none' } as unknown as ViewStyle)
+          ? ({ cursor: disabled ? 'default' : 'pointer' } as unknown as ViewStyle)
           : null,
       ]}
     >
@@ -167,4 +177,3 @@ export function IconButton({
     </Pressable>
   );
 }
-

@@ -8,6 +8,7 @@ import {
   IBMPlexSans_600SemiBold,
 } from '@expo-google-fonts/ibm-plex-sans';
 import { BootScreen } from '@/components/BootScreen';
+import { ToastProvider } from '@/components/Toast';
 import { SessionProvider } from '@/lib/session';
 import { colors } from '@/theme/tokens';
 
@@ -25,13 +26,15 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <SessionProvider>
-        <StatusBar style="dark" />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: colors.canvas },
-          }}
-        />
+        <ToastProvider>
+          <StatusBar style="dark" />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: colors.canvas },
+            }}
+          />
+        </ToastProvider>
       </SessionProvider>
     </SafeAreaProvider>
   );

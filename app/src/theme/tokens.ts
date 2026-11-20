@@ -4,46 +4,54 @@ import { Platform } from 'react-native';
  * The one place design decisions live. Components read these; no raw hex
  * values, magic spacing or one-off radii anywhere else.
  *
- * Palette comes from the original prototype: lagoon teal, sun amber, ink and
- * a cool paper background. Neutrals lean toward the teal, never purple.
+ * Direction: a deliberately plain internal HR tool. Near-white canvas, white
+ * surfaces, 1px borders, no soft shadows, 6-8px radii. One accent (the lagoon
+ * teal) for primary actions and the active nav item only. Amber, green and red
+ * are reserved for pending, approved and rejected.
+ *
+ * Type scale: 12 / 14 / 16 / 20 / 28. Nothing smaller than 12 and nothing in
+ * the body copy smaller than 14. Spacing sits on a 4px grid.
  */
 export const colors = {
-  canvas: '#E8F0F3',
+  canvas: '#F7F8F9',
   surface: '#FFFFFF',
-  surfaceMuted: '#F2F7F8',
-  surfaceSunken: '#DEE9EC',
+  surfaceMuted: '#F3F4F6',
+  surfaceSunken: '#E9ECEF',
 
-  ink: '#10212B',
-  muted: '#52646E',
-  faint: '#7C8D97',
+  ink: '#111827',
+  muted: '#4B5563',
+  faint: '#6B7280',
   onDark: '#FFFFFF',
-  onDarkMuted: '#A9BEC9',
+  onDarkMuted: '#C3CBD5',
 
-  brand: '#0F8B8D',
-  brandPressed: '#0B6B6C',
-  brandSoft: '#DCEFEF',
-  brandInk: '#074C4D',
+  // The single accent. Dark enough for white text at AA.
+  brand: '#0B6B6C',
+  brandPressed: '#095456',
+  brandSoft: '#E8F2F2',
+  brandInk: '#064445',
 
-  accent: '#F6B93B',
-  accentSoft: '#FBEED2',
+  // Kept as an alias so nothing can quietly introduce a second accent.
+  accent: '#0B6B6C',
+  accentSoft: '#E8F2F2',
 
-  border: '#D5E1E5',
-  borderStrong: '#B9CBD1',
+  border: '#DDE1E5',
+  borderStrong: '#C6CCD2',
 
-  sidebar: '#0A2533',
-  sidebarActive: '#14394A',
+  sidebar: '#111C24',
+  sidebarActive: '#1D2C36',
 
-  success: '#13804B',
-  successSoft: '#DFF2E8',
+  success: '#166534',
+  successSoft: '#DCFCE7',
   warning: '#8A5600',
-  warningSoft: '#FBEDD2',
-  danger: '#B3342E',
-  dangerSoft: '#F8E3E1',
-  focus: '#0F8B8D',
+  warningSoft: '#FDF0D5',
+  danger: '#B42318',
+  dangerSoft: '#FEE4E2',
+  focus: '#0B6B6C',
 } as const;
 
+/** 4px grid. Names are kept from the previous scale for compatibility. */
 export const space = {
-  xxs: 2,
+  xxs: 4,
   xs: 4,
   sm: 8,
   md: 12,
@@ -52,33 +60,34 @@ export const space = {
   xxl: 24,
   xxxl: 32,
   huge: 40,
-  giant: 56,
+  giant: 48,
 } as const;
 
 export const radius = {
-  control: 10,
-  card: 16,
+  sm: 4,
+  control: 6,
+  card: 8,
   pill: 999,
 } as const;
 
 export const fontSize = {
   micro: 12,
-  small: 13,
-  body: 15,
-  lead: 17,
+  small: 14,
+  body: 14,
+  lead: 16,
   title: 20,
-  heading: 26,
-  display: 34,
+  heading: 28,
+  display: 28,
 } as const;
 
 export const lineHeight = {
   micro: 16,
-  small: 18,
-  body: 22,
+  small: 20,
+  body: 20,
   lead: 24,
-  title: 26,
-  heading: 32,
-  display: 40,
+  title: 28,
+  heading: 36,
+  display: 36,
 } as const;
 
 export const weight = {
@@ -93,27 +102,13 @@ export const fonts = {
   semibold: 'IBMPlexSans_600SemiBold',
 } as const;
 
+/**
+ * Flat surfaces use a 1px border, not a shadow. The names stay so old call
+ * sites keep compiling; they intentionally carry no elevation.
+ */
 export const shadow = {
-  card: Platform.select({
-    web: { boxShadow: '0 1px 2px rgba(10, 37, 51, 0.06)' },
-    default: {
-      shadowColor: '#0A2533',
-      shadowOpacity: 0.06,
-      shadowRadius: 2,
-      shadowOffset: { width: 0, height: 1 },
-      elevation: 1,
-    },
-  }),
-  overlay: Platform.select({
-    web: { boxShadow: '0 16px 40px rgba(10, 37, 51, 0.18)' },
-    default: {
-      shadowColor: '#0A2533',
-      shadowOpacity: 0.18,
-      shadowRadius: 24,
-      shadowOffset: { width: 0, height: 12 },
-      elevation: 8,
-    },
-  }),
+  card: {},
+  overlay: {},
 } as const;
 
 export const motion = {
@@ -123,13 +118,19 @@ export const motion = {
 
 /** Layout constants shared by the shell and screens. */
 export const layout = {
-  sidebarWidth: 264,
-  contentMax: 1040,
-  pageGutter: 20,
-  wideBreakpoint: 920,
+  sidebarWidth: 240,
+  contentMax: 1120,
+  pageGutter: 24,
+  wideBreakpoint: 768,
 } as const;
 
 export const brand = {
   name: 'Leave system',
   tagline: 'Employee leave applications',
 } as const;
+
+/** Visible keyboard focus ring, shared by every interactive control. */
+export const focusRing =
+  Platform.OS === 'web'
+    ? ({ outlineStyle: 'solid', outlineWidth: 2, outlineColor: colors.focus, outlineOffset: 2 } as const)
+    : ({ borderColor: colors.focus } as const);

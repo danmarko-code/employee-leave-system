@@ -59,15 +59,10 @@ export default function RequestDetailScreen() {
       <PageHeader
         title="Request details"
         subtitle={application ? `#${application.id} · filed ${formatDateTime(application.createdAt)}` : undefined}
-        action={
-          <Button
-            label="Back"
-            variant="ghost"
-            size="sm"
-            icon="chevron-back"
-            onPress={() => router.back()}
-          />
-        }
+        breadcrumbs={[
+          { label: isAdmin ? 'Applications' : 'My requests', href: isAdmin ? '/approvals' : '/requests' },
+          { label: application ? `Request #${application.id}` : 'Request' },
+        ]}
       />
 
       {error ? (

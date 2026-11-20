@@ -54,11 +54,36 @@ function Reports() {
       />
 
       <View style={styles.statsRow}>
-        <StatTile label="Waiting" value={stats?.pending ?? '–'} tone="warning" icon="time-outline" />
-        <StatTile label="Approved" value={stats?.approved ?? '–'} tone="success" icon="checkmark-circle-outline" />
-        <StatTile label="Rejected" value={stats?.rejected ?? '–'} tone="danger" icon="close-circle-outline" />
-        <StatTile label="Active people" value={stats?.activeEmployees ?? '–'} tone="brand" icon="people-outline" />
-        <StatTile label="Leave types" value={stats?.activeLeaveTypes ?? '–'} tone="brand" icon="albums-outline" />
+        <StatTile
+          label="Waiting"
+          value={stats?.pending ?? '–'}
+          tone="warning"
+          icon="time-outline"
+        />
+        <StatTile
+          label="Approved"
+          value={stats?.approved ?? '–'}
+          tone="success"
+          icon="checkmark-circle-outline"
+        />
+        <StatTile
+          label="Rejected"
+          value={stats?.rejected ?? '–'}
+          tone="danger"
+          icon="close-circle-outline"
+        />
+        <StatTile
+          label="Active employees"
+          value={stats?.activeEmployees ?? '–'}
+          tone="brand"
+          icon="people-outline"
+        />
+        <StatTile
+          label="Active leave types"
+          value={stats?.activeLeaveTypes ?? '–'}
+          tone="brand"
+          icon="albums-outline"
+        />
       </View>
 
       <SummaryCard />

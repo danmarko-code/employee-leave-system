@@ -80,7 +80,10 @@ function LeaveTypeEditor() {
       <PageHeader
         title={type ? type.name : 'Leave type'}
         subtitle="Entitlements apply from the next year's balance calculation; filed applications keep their own numbers."
-        action={<Button label="Back" variant="ghost" size="sm" icon="chevron-back" onPress={() => router.back()} />}
+        breadcrumbs={[
+          { label: 'Leave types', href: '/admin/leave-types' },
+          { label: type ? type.name : 'Leave type' },
+        ]}
       />
 
       {loadError ? (

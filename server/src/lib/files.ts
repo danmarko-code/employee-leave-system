@@ -5,6 +5,11 @@ import { DOCUMENT_MIME_TYPES } from '@leave/shared';
 
 export type AllowedMime = (typeof DOCUMENT_MIME_TYPES)[number];
 
+export const PHOTO_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
+export type PhotoMime = (typeof PHOTO_MIME_TYPES)[number];
+
+export const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
+
 const EXTENSIONS: Record<AllowedMime, string> = {
   'application/pdf': 'pdf',
   'image/jpeg': 'jpg',
@@ -40,6 +45,55 @@ export function sniffMime(buffer: Buffer): AllowedMime | null {
 
 export function extensionFor(mime: AllowedMime): string {
   return EXTENSIONS[mime];
+}
+
+/**
+ * Photo formats only, decided from the bytes. SVG is text and is intentionally
+ * never recognised, no matter what the browser claims the file is.
+ */
+export function sniffImageMime(buffer: Buffer): PhotoMime | null {
+  if (buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
+    return 'image/jpeg';
+  }
+  if (
+    buffer.length >= 8 &&
+    buffer[0] === 0x89 &&
+    buffer[1] === 0x50 &&
+    buffer[2] === 0x4e &&
+    buffer[3] === 0x47 &&
+    buffer[4] === 0x0d &&
+    buffer[5] === 0x0a &&
+    buffer[6] === 0x1a &&
+    buffer[7] === 0x0a
+  ) {
+    return 'image/png';
+  }
+  if (
+    buffer.length >= 12 &&
+    buffer.subarray(0, 4).toString('latin1') === 'RIFF' &&
+    buffer.subarray(8, 12).toString('latin1') === 'WEBP'
+  ) {
+    return 'image/webp';
+  }
+  return null;
+}
+
+/** The stored name is a random UUID stem; the extension is always .webp. */
+export function newPhotoStem(): string {
+  return randomUUID();
+}
+
+export function isValidPhotoStem(value: string): boolean {
+  return /^[0-9a-f-]{36}$/.test(value);
+}
+
+export function photoDir(uploadDir: string): string {
+  return path.join(uploadDir, 'photos');
+}
+
+export function photoFile(uploadDir: string, stem: string, variant: 'full' | 'thumb'): string {
+  if (!isValidPhotoStem(stem)) throw new Error('Invalid photo identifier.');
+  return path.join(photoDir(uploadDir), variant === 'thumb' ? `${stem}_thumb.webp` : `${stem}.webp`);
 }
 
 export function sha256(buffer: Buffer): string {

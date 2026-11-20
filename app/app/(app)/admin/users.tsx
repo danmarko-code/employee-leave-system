@@ -11,6 +11,7 @@ import { RequireRole } from '@/components/RequireRole';
 import { TextField } from '@/components/TextField';
 import { apiFetch } from '@/lib/api';
 import { roleLabel } from '@/lib/format';
+import { usePhoto } from '@/lib/photo';
 import { sessionErrorMessage } from '@/lib/session';
 import { colors, fonts, radius, space } from '@/theme/tokens';
 
@@ -247,6 +248,7 @@ function UserRow({
   first: boolean;
   onOpen: () => void;
 }) {
+  const photo = usePhoto(user.id, 'thumb');
   return (
     <Pressable
       onPress={onOpen}
@@ -255,7 +257,7 @@ function UserRow({
       accessibilityHint="Opens the account to edit it"
       style={({ pressed }) => [styles.row, !first && styles.rowDivided, pressed && styles.rowPressed]}
     >
-      <Avatar name={user.name} size="sm" />
+      <Avatar name={user.name} photo={photo} size="sm" />
       <View style={styles.rowText}>
         <AppText variant="body" style={{ fontFamily: fonts.medium }} numberOfLines={1}>
           {user.name}

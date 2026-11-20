@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import type { LeaveApplicationDto, LeaveStatus, LeaveTypeDto, Page } from '@leave/shared';
+import { useRouter } from 'expo-router';
 import { PageHeader, Screen } from '@/components/Screen';
 import { AppText } from '@/components/Text';
-import { Button } from '@/components/Button';
-import { Avatar, Card, EmptyState, Notice, Skeleton, StatusPill } from '@/components/Surface';
+import { Avatar, EmptyState, Notice, Skeleton } from '@/components/Surface';
 import { RequireRole } from '@/components/RequireRole';
 import { TextField } from '@/components/TextField';
+import { Table, type TableColumn } from '@/components/Table';
 import { apiFetch } from '@/lib/api';
-import { daysLabel, formatDateRange } from '@/lib/format';
+import { daysLabel, formatDateRange, formatDateTime } from '@/lib/format';
+import { usePhoto } from '@/lib/photo';
 import { sessionErrorMessage } from '@/lib/session';
 import { colors, fonts, radius, space } from '@/theme/tokens';
 
@@ -108,7 +108,72 @@ function ApprovalsQueue() {
     setPage(1);
   }, []);
 
-  const totalPages = data ? Math.max(1, Math.ceil(data.total / PAGE_SIZE)) : 1;
+  const columns: TableColumn<LeaveApplicationDto>[] = [
+    {
+      key: 'photo',
+      header: 'Photo',
+      render: (row) => <QueueAvatar userId={row.userId} name={row.employeeName} />,
+    },
+    {
+      key: 'name',
+      header: 'Employee',
+      render: (row) => (
+        <AppText variant="body" style={{ fontFamily: fonts.medium }} numberOfLines={1}>
+          {row.employeeName}
+        </AppText>
+      ),
+    },
+    {
+      key: 'department',
+      header: 'Department',
+      render: (row) => (
+        <AppText variant="small" tone="muted" numberOfLines={1}>
+          {row.department || '—'}
+        </AppText>
+      ),
+    },
+    {
+      key: 'type',
+      header: 'Type',
+      render: (row) => (
+        <AppText variant="small" tone="muted" numberOfLines={1}>
+          {row.leaveTypeName}
+        </AppText>
+      ),
+    },
+    {
+      key: 'dates',
+      header: 'Dates',
+      render: (row) => (
+        <AppText variant="small" tone="muted" numberOfLines={1}>
+          {formatDateRange(row.startDate, row.endDate)}
+        </AppText>
+      ),
+    },
+    {
+      key: 'days',
+      header: 'Days',
+      render: (row) => (
+        <AppText variant="small" tone="muted" numberOfLines={1}>
+          {daysLabel(row.workingDays)}
+        </AppText>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (row) => <QueueStatus status={row.status} />,
+    },
+    {
+      key: 'filedOn',
+      header: 'Filed on',
+      render: (row) => (
+        <AppText variant="small" tone="muted" numberOfLines={1}>
+          {formatDateTime(row.createdAt)}
+        </AppText>
+      ),
+    },
+  ];
 
   return (
     <Screen>
@@ -206,124 +271,44 @@ function ApprovalsQueue() {
         </View>
       ) : null}
 
-      {error ? (
-        <Card style={styles.errorCard}>
-          <Notice tone="error">{error}</Notice>
-          <Button
-            label="Try again"
-            variant="secondary"
-            size="sm"
-            onPress={() => setAttempt((count) => count + 1)}
-          />
-        </Card>
-      ) : null}
-
-      <Card padded={false}>
-        {data === null && !error ? (
-          <View style={styles.skeletonList}>
-            {[0, 1, 2, 3].map((key) => (
-              <View key={key} style={styles.skeletonRow}>
-                <Skeleton height={16} width="42%" />
-                <Skeleton height={12} width="66%" />
-              </View>
-            ))}
-          </View>
-        ) : data && data.items.length > 0 ? (
-          data.items.map((application, index) => (
-            <QueueRow
-              key={application.id}
-              application={application}
-              first={index === 0}
-              onOpen={() => router.push(`/requests/${application.id}`)}
-            />
-          ))
-        ) : data ? (
-          <EmptyState
-            icon="file-tray-full-outline"
-            title={filter === 'pending' ? 'Nothing is waiting' : 'Nothing matches these filters'}
-            body={
-              filter === 'pending' && !query && typeFilter === 'all'
-                ? 'New employee applications will appear here for your review.'
-                : 'Try a different status, leave type or search.'
-            }
-          />
-        ) : null}
-      </Card>
-
-      {data && data.total > 0 ? (
-        <View style={styles.pagination}>
-          <AppText variant="small" tone="muted" tabular>
-            {data.total} {data.total === 1 ? 'application' : 'applications'}
-            {' · '}page {data.page} of {totalPages}
-          </AppText>
-          <View style={styles.paginationButtons}>
-            <Button
-              label="Previous"
-              variant="secondary"
-              size="sm"
-              disabled={page <= 1}
-              onPress={() => setPage((current) => Math.max(1, current - 1))}
-            />
-            <Button
-              label="Next"
-              variant="secondary"
-              size="sm"
-              disabled={page >= totalPages}
-              onPress={() => setPage((current) => Math.min(totalPages, current + 1))}
-            />
-          </View>
-        </View>
-      ) : null}
+      <Table
+        columns={columns}
+        rows={data?.items ?? []}
+        rowKey={(row) => row.id}
+        onRowPress={(row) => router.push(`/requests/${row.id}`)}
+        loading={data === null && !error}
+        error={error}
+        onRetry={() => setAttempt((count) => count + 1)}
+        emptyTitle={filter === 'pending' && !query && typeFilter === 'all' ? 'Nothing is waiting' : 'Nothing matches these filters'}
+        page={page}
+        pageSize={PAGE_SIZE}
+        total={data?.total}
+        onPageChange={setPage}
+        rowLabel={(row) => `${row.employeeName}, ${row.leaveTypeName}, ${formatDateRange(row.startDate, row.endDate)}, ${row.status}`}
+      />
     </Screen>
   );
 }
 
-function QueueRow({
-  application,
-  first,
-  onOpen,
-}: {
-  application: LeaveApplicationDto;
-  first: boolean;
-  onOpen: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onOpen}
-      accessibilityRole="button"
-      accessibilityLabel={`${application.employeeName}, ${application.leaveTypeName}, ${formatDateRange(
-        application.startDate,
-        application.endDate
-      )}, ${application.status}`}
-      accessibilityHint="Opens the application to review it"
-      style={({ pressed }) => [styles.row, !first && styles.rowDivided, pressed && styles.rowPressed]}
-    >
-      <Avatar name={application.employeeName} size="sm" />
-      <View style={styles.rowText}>
-        <AppText variant="body" style={{ fontFamily: fonts.medium }} numberOfLines={1}>
-          {application.employeeName}
-        </AppText>
-        <AppText variant="small" tone="muted" numberOfLines={1}>
-          {application.leaveTypeName} · {formatDateRange(application.startDate, application.endDate)} ·{' '}
-          {daysLabel(application.workingDays)}
-        </AppText>
-        <AppText variant="micro" tone="faint" numberOfLines={1}>
-          {application.department} · filed {formatFiledOn(application.createdAt)}
-        </AppText>
-      </View>
-      <View style={styles.rowMeta}>
-        <StatusPill status={application.status} />
-      </View>
-      <Ionicons name="chevron-forward" size={18} color={colors.faint} />
-    </Pressable>
-  );
+function QueueAvatar({ userId, name }: { userId: number; name: string }) {
+  const photo = usePhoto(userId, 'thumb');
+  return <Avatar name={name} photo={photo} size="sm" />;
 }
 
-function formatFiledOn(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '';
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+function QueueStatus({ status }: { status: LeaveStatus }) {
+  const map = {
+    pending: { bg: colors.warningSoft, color: colors.warning, label: 'Pending' },
+    approved: { bg: colors.successSoft, color: colors.success, label: 'Approved' },
+    rejected: { bg: colors.dangerSoft, color: colors.danger, label: 'Rejected' },
+  };
+  const s = map[status];
+  return (
+    <Pressable style={[styles.statusPill, { backgroundColor: s.bg }]} accessibilityRole="text" accessibilityLabel={s.label}>
+      <AppText variant="micro" style={{ color: s.color, fontFamily: fonts.medium }}>
+        {s.label}
+      </AppText>
+    </Pressable>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -354,49 +339,9 @@ const styles = StyleSheet.create({
   chipPressed: {
     backgroundColor: colors.surfaceMuted,
   },
-  errorCard: {
-    gap: space.md,
-    alignItems: 'flex-start',
-  },
-  skeletonList: {
-    gap: space.xxl,
-    padding: space.xl,
-  },
-  skeletonRow: {
-    gap: space.sm,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.md,
-    paddingHorizontal: space.xl,
-    paddingVertical: space.lg,
-  },
-  rowDivided: {
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  rowPressed: {
-    backgroundColor: colors.surfaceMuted,
-  },
-  rowText: {
-    flex: 1,
-    gap: 2,
-    flexShrink: 1,
-  },
-  rowMeta: {
-    alignItems: 'flex-end',
-    gap: space.xs,
-  },
-  pagination: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: space.md,
-  },
-  paginationButtons: {
-    flexDirection: 'row',
-    gap: space.sm,
+  statusPill: {
+    borderRadius: radius.pill,
+    paddingVertical: 3,
+    paddingHorizontal: space.sm,
   },
 });
