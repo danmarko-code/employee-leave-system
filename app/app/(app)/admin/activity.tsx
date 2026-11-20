@@ -31,6 +31,8 @@ const ACTION_LABELS: Record<ActivityAction, string> = {
   leave_rejected: 'Leave rejected',
   leave_type_changed: 'Leave type changed',
   report_generated: 'Report generated',
+  holiday_created: 'Holiday created',
+  holiday_deleted: 'Holiday deleted',
 };
 
 const ALERT_ACTIONS = new Set<ActivityAction>(['login_failure', 'session_reuse', 'access_denied']);

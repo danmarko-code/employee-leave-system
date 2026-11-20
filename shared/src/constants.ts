@@ -48,6 +48,8 @@ export const ACTIVITY_ACTIONS = [
   'leave_rejected',
   'leave_type_changed',
   'report_generated',
+  'holiday_created',
+  'holiday_deleted',
 ] as const;
 export type ActivityAction = (typeof ACTIVITY_ACTIONS)[number];
 

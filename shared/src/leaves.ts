@@ -144,3 +144,20 @@ export interface Page<T> {
   pageSize: number;
   total: number;
 }
+
+// ---------------------------------------------------------------------------
+// Holidays
+// ---------------------------------------------------------------------------
+
+export const holidayCreateSchema = z
+  .strictObject({
+    name: z.string().trim().min(1, 'Enter a holiday name.').max(LIMITS.name),
+    date: isoDateSchema,
+  });
+
+export const holidayDeleteSchema = z.strictObject({
+  id: idSchema,
+});
+
+export type HolidayCreateInput = z.infer<typeof holidayCreateSchema>;
+export type HolidayDeleteInput = z.infer<typeof holidayDeleteSchema>;

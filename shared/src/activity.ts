@@ -10,6 +10,7 @@ export const activityQuerySchema = z
     userId: z.coerce.number().int().positive().optional(),
     from: isoDateTimeSchema.optional(),
     to: isoDateTimeSchema.optional(),
+    format: z.enum(['json', 'csv']).optional(),
   })
   .strict()
   .refine((value) => !value.from || !value.to || new Date(value.from) <= new Date(value.to), {

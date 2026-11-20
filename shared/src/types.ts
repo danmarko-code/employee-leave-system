@@ -46,4 +46,18 @@ export interface ActivityLogPage {
   total: number;
 }
 
+export interface HolidayDto {
+  id: number;
+  name: string;
+  date: string;
+  isActive: boolean;
+}
+
+export interface HolidayDto {
+  id: number;
+  name: string;
+  date: string;
+  isActive: boolean;
+}
+
 export type { ClientType, Role };

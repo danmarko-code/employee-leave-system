@@ -9,6 +9,7 @@ import { registerLeaveRoutes } from './leaves.routes';
 import { registerAdminLeaveRoutes } from './adminLeaves.routes';
 import { registerAdminUserRoutes } from './adminUsers.routes';
 import { registerAdminLeaveTypeRoutes } from './adminLeaveTypes.routes';
+import { registerAdminHolidayRoutes } from './adminHolidays.routes';
 import { registerUserRoutes } from './users.routes';
 import { registerReportRoutes } from './reports.routes';
 
@@ -27,6 +28,7 @@ export function createApiRouter(deps: { config: AppConfig; pool: Pool }): {
   registerAdminLeaveRoutes(router, registry, deps);
   registerAdminUserRoutes(router, registry, deps);
   registerAdminLeaveTypeRoutes(router, registry, deps);
+  registerAdminHolidayRoutes(router, registry, deps);
   registerReportRoutes(router, registry, deps);
 
   return { router, registry };
