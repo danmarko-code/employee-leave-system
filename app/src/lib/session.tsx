@@ -37,12 +37,21 @@ export interface SessionState {
 }
 
 interface SessionContextValue extends SessionState {
+  /** True from the moment sign-out starts until local state is cleared. */
+  signingOut: boolean;
   signIn(email: string, password: string): Promise<void>;
   signOut(): Promise<void>;
   savePhone(phone: string | null): Promise<UserDto>;
 }
 
 const SessionContext = createContext<SessionContextValue | null>(null);
+
+/**
+ * How long sign-out waits for the server to revoke the session. A healthy API
+ * answers in milliseconds; the budget only exists so a hung or unreachable
+ * connection cannot trap the person inside the app.
+ */
+const SIGN_OUT_REVOKE_TIMEOUT_MS = 2000;
 
 async function readStoredRefreshToken(): Promise<string | null> {
   if (isWeb) return null;
@@ -70,6 +79,7 @@ async function writeStoredRefreshToken(token: string | null): Promise<void> {
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const channelRef = useRef<BroadcastChannel | null>(null);
+  const [signingOut, setSigningOut] = useState(false);
   const [state, setState] = useState<SessionState>({
     status: 'restoring',
     user: null,
@@ -97,6 +107,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setTokens({ accessToken: null, refreshToken: null });
     clearPhotoCache();
     await writeStoredRefreshToken(null);
+    setSigningOut(false);
     setState({
       status: 'signedOut',
       user: null,
@@ -195,7 +206,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [clearLocal]);
 
   const signOut = useCallback(async () => {
-    await authApi.logout();
+    setSigningOut(true);
+    // Wait for the server revoke, but never longer than the budget: the local
+    // session is cleared either way and the server expires it on its own.
+    await Promise.race([
+      authApi.logout(),
+      new Promise<void>((resolve) => {
+        setTimeout(resolve, SIGN_OUT_REVOKE_TIMEOUT_MS);
+      }),
+    ]);
     await clearLocal();
     // Other tabs drop the in-memory token without calling the server again.
     channelRef.current?.postMessage('signed-out');
@@ -211,8 +230,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<SessionContextValue>(
-    () => ({ ...state, signIn, signOut, savePhone }),
-    [state, signIn, signOut, savePhone]
+    () => ({ ...state, signingOut, signIn, signOut, savePhone }),
+    [state, signingOut, signIn, signOut, savePhone]
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

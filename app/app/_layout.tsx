@@ -8,6 +8,7 @@ import {
   IBMPlexSans_600SemiBold,
 } from '@expo-google-fonts/ibm-plex-sans';
 import { BootScreen } from '@/components/BootScreen';
+import { SignOutOverlay } from '@/components/SignOutOverlay';
 import { ToastProvider } from '@/components/Toast';
 import { SessionProvider } from '@/lib/session';
 import { colors } from '@/theme/tokens';
@@ -34,6 +35,7 @@ export default function RootLayout() {
               contentStyle: { backgroundColor: colors.canvas },
             }}
           />
+          <SignOutOverlay />
         </ToastProvider>
       </SessionProvider>
     </SafeAreaProvider>

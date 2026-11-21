@@ -1,5 +1,14 @@
 import { type ReactNode, useState } from 'react';
-import { Modal, Platform, Pressable, StyleSheet, useWindowDimensions, View, type ViewStyle } from 'react-native';
+import {
+  ActivityIndicator,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+  type ViewStyle,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { usePathname, useRouter } from 'expo-router';
@@ -47,7 +56,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, signOut } = useSession();
+  const { user, signOut, signingOut } = useSession();
   const photo = usePhoto(user?.id, 'thumb');
   if (!user) return null;
 
@@ -88,16 +97,24 @@ function Sidebar() {
           </View>
           <Pressable
             onPress={() => void signOut()}
+            disabled={signingOut}
             accessibilityRole="button"
             accessibilityLabel="Sign out"
+            accessibilityState={{ disabled: signingOut, busy: signingOut }}
             hitSlop={8}
             style={({ pressed }) => [
               styles.signOut,
-              pressed && { backgroundColor: 'rgba(255,255,255,0.10)' },
-              Platform.OS === 'web' ? ({ cursor: 'pointer', outlineStyle: 'none' } as unknown as ViewStyle) : null,
+              pressed && !signingOut && { backgroundColor: 'rgba(255,255,255,0.10)' },
+              Platform.OS === 'web'
+                ? ({ cursor: signingOut ? 'default' : 'pointer', outlineStyle: 'none' } as unknown as ViewStyle)
+                : null,
             ]}
           >
-            <Ionicons name="log-out-outline" size={20} color={colors.onDarkMuted} />
+            {signingOut ? (
+              <ActivityIndicator size="small" color={colors.onDarkMuted} />
+            ) : (
+              <Ionicons name="log-out-outline" size={20} color={colors.onDarkMuted} />
+            )}
           </Pressable>
         </View>
       </View>

@@ -13,7 +13,7 @@ import { sessionErrorMessage, useSession } from '@/lib/session';
 import { colors, space } from '@/theme/tokens';
 
 export default function ProfileScreen() {
-  const { user, sessionExpiresAt, savePhone, signOut } = useSession();
+  const { user, sessionExpiresAt, savePhone, signOut, signingOut } = useSession();
   if (!user) return null;
 
   return (
@@ -52,7 +52,13 @@ export default function ProfileScreen() {
         </AppText>
 
         <View style={styles.sessionActions}>
-          <Button label="Sign out" variant="danger" icon="log-out-outline" onPress={() => void signOut()} />
+          <Button
+            label="Sign out"
+            variant="danger"
+            icon="log-out-outline"
+            loading={signingOut}
+            onPress={() => void signOut()}
+          />
         </View>
       </Card>
     </Screen>

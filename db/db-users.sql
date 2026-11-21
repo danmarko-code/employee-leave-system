@@ -44,6 +44,9 @@ GRANT SELECT, INSERT          ON leave_system.documents        TO 'leave_app'@'_
 -- Append-only: no UPDATE, no DELETE for the runtime account.
 GRANT SELECT, INSERT          ON leave_system.activity_logs    TO 'leave_app'@'__DB_USER_HOST__';
 
+-- Public holidays: admins add/remove rows; no in-place update path yet.
+GRANT SELECT, INSERT, DELETE  ON leave_system.holidays         TO 'leave_app'@'__DB_USER_HOST__';
+
 -- ---------------------------------------------------------------------------
 -- Report account (optional, read-only)
 -- Column-level grant on users so password hashes, phone numbers, lockout
