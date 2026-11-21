@@ -16,9 +16,12 @@ import {
   type PickedDocument,
 } from '@/lib/document';
 import { countWorkingDays, isIsoDate, sameYear, todayIso } from '@/lib/dates';
+import { useDatePicker } from '@/lib/datePicker';
 import { formatFileSize } from '@/lib/format';
 import { sessionErrorMessage, useSession } from '@/lib/session';
-import { colors, fonts, radius, space } from '@/theme/tokens';
+import { colors, fonts, radius, space, fontSize } from '@/theme/tokens';
+
+import DatePickerModal from '@/components/DatePickerModal';
 
 export default function ApplyScreen() {
   const router = useRouter();
@@ -68,6 +71,11 @@ export default function ApplyScreen() {
   const workingDays = isIsoDate(startDate) && isIsoDate(endDate) ? countWorkingDays(startDate, endDate) : null;
   const remaining = selectedType ? balances.get(selectedType.id)?.remainingDays : undefined;
   const exceeds = workingDays !== null && remaining !== undefined && workingDays > remaining;
+
+  const datePicker = useDatePicker(selectedType, startDate, endDate, (date, mode) => {
+    if (mode === 'start') setStartDate(date);
+    if (mode === 'end') setEndDate(date);
+  });
 
   const clientErrors = useMemo(() => {
     const errors: Record<string, string> = {};
@@ -271,46 +279,76 @@ export default function ApplyScreen() {
           <SectionTitle title="Dates" detail="Working days are Monday to Friday. Holidays are not counted." />
           <View style={styles.dateRow}>
             <View style={styles.dateField}>
-              <TextField
-                label="Start date"
-                value={startDate}
-                onChangeText={(value) => {
-                  setStartDate(value);
-                  setFields((current) => {
-                  const { startDate: _dropped, ...rest } = current;
-                  return rest;
-                });
-                }}
-                placeholder={`${new Date().getUTCFullYear()}-12-14`}
-                error={fields.startDate ?? clientErrors.startDate ?? null}
-                autoComplete="off"
-                autoCorrect={false}
-                keyboardType="numbers-and-punctuation"
-                maxLength={10}
-                editable={!submitting}
-              />
+              <View style={styles.dateInputGroup}>
+                <TextField
+                  label="Start date"
+                  value={startDate}
+                  onChangeText={(value) => {
+                    setStartDate(value);
+                    setFields((current) => {
+                      const { startDate: _dropped, ...rest } = current;
+                      return rest;
+                    });
+                  }}
+                  placeholder={`${new Date().getUTCFullYear()}-12-14`}
+                  error={fields.startDate ?? clientErrors.startDate ?? null}
+                  autoComplete="off"
+                  autoCorrect={false}
+                  keyboardType="numbers-and-punctuation"
+                  maxLength={10}
+                  editable={!submitting}
+                />
+                <Pressable
+                  onPress={() => datePicker.openPicker('start')}
+                  disabled={submitting}
+                  style={styles.calendarButton}
+                  accessibilityLabel="Open calendar for start date"
+                >
+                  <Ionicons name="calendar-outline" size={18} color={colors.brand} />
+                </Pressable>
+              </View>
             </View>
             <View style={styles.dateField}>
-              <TextField
-                label="End date"
-                value={endDate}
-                onChangeText={(value) => {
-                  setEndDate(value);
-                  setFields((current) => {
-                  const { endDate: _dropped, ...rest } = current;
-                  return rest;
-                });
-                }}
-                placeholder={`${new Date().getUTCFullYear()}-12-16`}
-                error={fields.endDate ?? clientErrors.endDate ?? null}
-                autoComplete="off"
-                autoCorrect={false}
-                keyboardType="numbers-and-punctuation"
-                maxLength={10}
-                editable={!submitting}
-              />
+              <View style={styles.dateInputGroup}>
+                <TextField
+                  label="End date"
+                  value={endDate}
+                  onChangeText={(value) => {
+                    setEndDate(value);
+                    setFields((current) => {
+                      const { endDate: _dropped, ...rest } = current;
+                      return rest;
+                    });
+                  }}
+                  placeholder={`${new Date().getUTCFullYear()}-12-16`}
+                  error={fields.endDate ?? clientErrors.endDate ?? null}
+                  autoComplete="off"
+                  autoCorrect={false}
+                  keyboardType="numbers-and-punctuation"
+                  maxLength={10}
+                  editable={!submitting}
+                />
+                <Pressable
+                  onPress={() => datePicker.openPicker('end')}
+                  disabled={submitting}
+                  style={styles.calendarButton}
+                  accessibilityLabel="Open calendar for end date"
+                >
+                  <Ionicons name="calendar-outline" size={18} color={colors.brand} />
+                </Pressable>
+              </View>
             </View>
           </View>
+          {datePicker.visible && (
+            <DatePickerModal
+              visible={datePicker.visible}
+              onClose={datePicker.closePicker}
+              initialDate={datePicker.mode === 'start' ? startDate : endDate}
+              onDateSelect={(dateString) => datePicker.selectDate(dateString)}
+              presets={datePicker.presets}
+              mode={datePicker.mode}
+            />
+          )}
           <View style={styles.summaryLine}>
             <Ionicons name="calendar-outline" size={16} color={colors.faint} />
             <AppText variant="small" tone={exceeds ? 'danger' : 'muted'}>
@@ -470,6 +508,18 @@ const styles = StyleSheet.create({
   },
   dateField: {
     flex: 1,
+  },
+  dateInputGroup: {
+    flexDirection: 'row',
+    gap: space.xs,
+  },
+  calendarButton: {
+    backgroundColor: colors.brandSoft,
+    borderRadius: radius.pill,
+    paddingHorizontal: space.xs,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
   },
   summaryLine: {
     flexDirection: 'row',
